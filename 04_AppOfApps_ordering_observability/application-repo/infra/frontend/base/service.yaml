@@ -1,0 +1,13 @@
+# root/apps/frontend/base/service.yaml
+apiVersion: v1  
+kind: Service  
+metadata:  
+  name: frontend  
+  namespace: devbcn-demo  
+spec:  
+  selector:  
+    app: frontend  
+  type: ClusterIP # Change to LoadBalancer if you need external exposure  
+  ports:  
+    - port: 80  
+      targetPort: 80  

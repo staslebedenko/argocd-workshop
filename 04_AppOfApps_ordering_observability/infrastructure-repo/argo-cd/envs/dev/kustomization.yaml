@@ -1,0 +1,13 @@
+# argo-cd/envs/dev/kustomization.yaml  
+resources:  
+  - ../../base  
+  - restrict-default-project.yaml
+  - project-devbcn-demo.yaml
+  - project-common-resources.yaml
+  
+namespace: argocd  
+  
+patches:  
+  - path: argocd-cm-patch.yaml  
+  - path: argocd-rbac-cm-patch.yaml
+  - path: argocd-audit-log-patch.yaml  

@@ -1,0 +1,12 @@
+# root/apps/backend/base/service.yaml
+apiVersion: v1  
+kind: Service  
+metadata:  
+  name: backend  
+  namespace: devbcn-demo  
+spec:  
+  selector:  
+    app: backend  
+  ports:  
+    - port: 5000  
+      targetPort: 5000  

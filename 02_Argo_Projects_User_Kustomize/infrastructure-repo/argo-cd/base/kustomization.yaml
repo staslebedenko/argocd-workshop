@@ -1,0 +1,5 @@
+# argo-cd/base/kustomization.yaml  
+resources:  
+  - install.yaml  
+
+namespace: argocd

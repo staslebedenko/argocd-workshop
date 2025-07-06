@@ -1,0 +1,9 @@
+# argo-cd/envs/dev/argocd-audit-log-patch.yaml
+apiVersion: v1  
+kind: ConfigMap  
+metadata:  
+  name: argocd-cm  
+  namespace: argocd  
+data:  
+  server.audit.enabled: "true"  
+  server.audit.logFormat: "json"  

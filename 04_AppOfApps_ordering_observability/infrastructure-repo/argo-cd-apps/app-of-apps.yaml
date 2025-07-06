@@ -1,0 +1,23 @@
+# argo-cd-apps/app-of-apps.yaml
+apiVersion: argoproj.io/v1alpha1  
+kind: Application  
+metadata:  
+  name: app-of-apps  
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io  
+spec:  
+  project: common-resources                 # warning :)  
+  source:  
+    repoURL: https://github.com/staslebedenko/dev-infrastructure.git  
+    targetRevision: HEAD  
+    path: step-4/argo-cd-apps/apps        # child folder containing child manifests  
+  destination:  
+    server: https://kubernetes.default.svc  
+    namespace: argocd  
+  syncPolicy:  
+    automated:  
+      prune: true  
+      selfHeal: true
+      allowEmpty: true
+         

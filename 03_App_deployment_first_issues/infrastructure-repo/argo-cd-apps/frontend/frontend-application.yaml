@@ -1,0 +1,21 @@
+# argo-cd-apps/frontend/frontend-application.yaml
+apiVersion: argoproj.io/v1alpha1  
+kind: Application  
+metadata:  
+  name: frontend-test  
+  namespace: argocd  
+  annotations:  
+    argocd.argoproj.io/sync-wave: "1" 
+spec:  
+  project: devbcn-demo  
+  source:  
+    repoURL: https://github.com/staslebedenko/infrastructure-repo.git  
+    targetRevision: HEAD  
+    path: step-3/apps/frontend/envs/dev  
+  destination:  
+    server: https://kubernetes.default.svc  
+    namespace: devbcn-demo  
+  syncPolicy:  
+    automated:  
+      prune: true  
+      selfHeal: true  

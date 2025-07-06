@@ -1,0 +1,5 @@
+# apps/common/base/namespace-devbcn.yaml 
+apiVersion: v1  
+kind: Namespace  
+metadata:  
+  name: devbcn-demo

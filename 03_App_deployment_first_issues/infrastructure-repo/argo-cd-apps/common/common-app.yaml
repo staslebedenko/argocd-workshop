@@ -1,0 +1,21 @@
+# argo-cd-apps/common/common-app.yaml 
+apiVersion: argoproj.io/v1alpha1  
+kind: Application  
+metadata:  
+  name: common-resources  
+  namespace: argocd  
+  annotations:  
+    argocd.argoproj.io/sync-wave: "0" 
+spec:  
+  project: common-resources  
+  source:  
+    repoURL: https://github.com/staslebedenko/infrastructure-repo.git  # Change to your Repo URL  
+    targetRevision: HEAD  
+    path: step-3\apps\common\base                # path to app manifest  
+  destination:  
+    server: https://kubernetes.default.svc  
+    namespace: default               # For namespaces use "default"
+  syncPolicy:  
+    automated:  
+      prune: false                   # 
+      selfHeal: true  
