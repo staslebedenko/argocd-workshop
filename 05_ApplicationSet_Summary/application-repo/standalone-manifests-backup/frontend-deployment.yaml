@@ -1,0 +1,33 @@
+apiVersion: apps/v1  
+kind: Deployment  
+metadata:  
+  name: frontend  
+  namespace: devbcn-demo  
+spec:  
+  replicas: 1  
+  selector:  
+    matchLabels:  
+      app: frontend  
+  template:  
+    metadata:  
+      labels:  
+        app: frontend  
+    spec:  
+      containers:  
+        - name: frontend  
+          image: docker.io/stasiko/funneverends-frontend:latest  
+          ports:  
+            - containerPort: 80  
+---  
+apiVersion: v1  
+kind: Service  
+metadata:  
+  name: frontend  
+  namespace: devbcn-demo  
+spec:  
+  selector:  
+    app: frontend  
+  type: ClusterIP # Change to LoadBalancer if you need to expose it externally
+  ports:  
+    - port: 80  
+      targetPort: 80  

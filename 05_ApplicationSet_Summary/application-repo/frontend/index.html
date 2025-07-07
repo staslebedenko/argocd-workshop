@@ -1,0 +1,68 @@
+<!DOCTYPE html>  
+<html>  
+<head>  
+    <title>Workshop App Status</title>  
+    <style>  
+        .status { padding:10px; color:white; }  
+        .green { background-color:green; }  
+        .red { background-color:red; }  
+    </style>  
+</head>  
+<body>  
+    <h2>Workshop App Status Dashboard</h2>  
+  
+    <div>  
+        Backend API Status: <span id="backend-status" class="status">Unknown</span>  
+        <button onclick="checkBackend()">Check Backend</button>  
+    </div>  
+  
+    <div>  
+        Redis DB Status: <span id="redis-status" class="status">Unknown</span>  
+        <button onclick="checkRedis()">Check Redis</button>  
+    </div>  
+  
+    <script>
+        const BACKEND_URL = "{{BACKEND_URL}}";
+        async function checkBackend(){  
+            try {  
+                fetch('http://localhost:5000/api/health')  
+                    .then(response => response.text())  
+                    .then(text => console.log("Result:", text))  
+                    .catch(err => console.error("Fetch Error:", err));
+                    
+                const response = await fetch(`${BACKEND_URL}/api/health`);  
+                const result = await response.text();  
+                const el = document.getElementById('backend-status');  
+                if(result.trim() === 'ok'){  
+                    el.textContent = 'Backend API Ready';  
+                    el.className = 'status green';  
+                } else {  
+                    el.textContent = 'Backend API Not Ready';  
+                    el.className = 'status red';  
+                }  
+            } catch (e){  
+                document.getElementById('backend-status').textContent = 'Backend API Unreachable';  
+                document.getElementById('backend-status').className = 'status red';  
+            }  
+        }  
+  
+        async function checkRedis(){  
+            try {  
+                const response = await fetch(`${BACKEND_URL}/api/redis`);  
+                const result = await response.text();  
+                const el = document.getElementById('redis-status');  
+                if(result.trim() === 'ok'){  
+                    el.textContent = 'Redis Ready';  
+                    el.className = 'status green';  
+                } else {  
+                    el.textContent = 'Redis Not Ready';  
+                    el.className = 'status red';  
+                }  
+            } catch (e){  
+                document.getElementById('redis-status').textContent = 'Redis Unreachable';  
+                document.getElementById('redis-status').className = 'status red';  
+            }  
+        }  
+    </script>  
+</body>  
+</html>  

@@ -1,0 +1,8 @@
+# root/apps/backend/base/backend-configmap.yaml
+apiVersion: v1  
+kind: ConfigMap  
+metadata:  
+  name: backend-config  
+  namespace: devbcn-demo  
+data:  
+  CORS_ALLOWED_ORIGIN: "http://localhost:8080"  

@@ -1,0 +1,8 @@
+# apps/frontend/envs/dev/deployment-patch.yaml
+apiVersion: apps/v1  
+kind: Deployment  
+metadata:  
+  name: frontend  
+  namespace: devbcn-demo 
+spec:  
+  replicas: 2 

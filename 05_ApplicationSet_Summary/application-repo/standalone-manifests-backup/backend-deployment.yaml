@@ -1,0 +1,43 @@
+apiVersion: apps/v1  
+kind: Deployment  
+metadata:  
+  name: backend  
+  namespace: devbcn  
+spec:  
+  replicas: 1  
+  selector:  
+    matchLabels:  
+      app: backend  
+  template:  
+    metadata:  
+      labels:  
+        app: devbcn-demo  
+    spec:  
+      containers:  
+        - name: backend  
+          image: docker.io/stasiko/funneverends-backend:latest  
+          ports:  
+            - containerPort: 5000  
+          env:  
+            - name: REDIS_CONN_STR  
+              valueFrom:  
+                secretKeyRef:  
+                  name: backend-secret  
+                  key: REDIS_CONN_STR  
+            - name: CORS_ALLOWED_ORIGIN  
+              valueFrom:  
+                configMapKeyRef:  
+                  name: backend-config  
+                  key: CORS_ALLOWED_ORIGIN   
+---  
+apiVersion: v1  
+kind: Service  
+metadata:  
+  name: backend  
+  namespace: devbcn-demo  
+spec:  
+  selector:  
+    app: backend  
+  ports:  
+    - port: 5000  
+      targetPort: 5000  

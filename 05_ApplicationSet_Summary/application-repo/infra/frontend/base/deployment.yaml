@@ -1,0 +1,21 @@
+# root/apps/frontend/base/deployment.yaml
+apiVersion: apps/v1  
+kind: Deployment  
+metadata:  
+  name: frontend  
+  namespace: devbcn-demo  
+spec:  
+  replicas: 1  
+  selector:  
+    matchLabels:  
+      app: frontend  
+  template:  
+    metadata:  
+      labels:  
+        app: frontend  
+    spec:  
+      containers:  
+        - name: frontend  
+          image: docker.io/stasiko/funneverends-frontend:latest  
+          ports:  
+            - containerPort: 80  

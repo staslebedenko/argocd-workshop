@@ -1,0 +1,27 @@
+version: "3.8"  
+  
+services:  
+  redis:  
+    image: redis:7-alpine  
+    ports:  
+      - "6380:6379"  
+  
+  backend:  
+    build: ./backend  
+    ports:  
+      - "5000:5000"  
+    environment:  
+      - CORS_ALLOWED_ORIGIN=http://localhost:8080  
+      - REDIS_CONN_STR=redis://redis:6379  
+    depends_on:  
+      - redis  
+  
+  frontend:  
+    build:  
+      context: ./frontend  
+      args:  
+        BACKEND_URL: "http://localhost:5000" # override default  
+    ports:  
+      - "8080:80"  
+    depends_on:  
+      - backend  
