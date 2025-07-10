@@ -326,53 +326,23 @@ patches:
 ```
 
 Test it
-
 ```yaml
 kustomize build argo-cd\envs\dev\
 ```
 
 And apply Argo CD changes
 
-```markdown
+```yaml
 kustomize build argo-cd\envs\dev\ | kubectl apply -f -
 ```
 
 Let’s check status in UI :)And update kustomize to include this file
-
-```yaml
-# argo-cd/envs/dev/kustomization.yaml  
-resources:  
-  - ../../base  
-  - restrict-default-project.yaml
-  - project-devbcn-demo.yaml
-  - project-common-resources.yaml
-  
-namespace: argocd  
-  
-patches:  
-  - path: argocd-cm-patch.yaml  
-  - path: argocd-rbac-cm-patch.yaml 
-```
-
-Test it
-
-```yaml
-kustomize build argo-cd\envs\dev\
-```
-
-And apply Argo CD changes
-
-```markdown
-kustomize build argo-cd\envs\dev\ | kubectl apply -f -
-```
-
-Let’s check status in UI
 ![image](https://github.com/user-attachments/assets/f43987d2-3769-4537-b21c-ea9c91852c6b)
 
 ### Error 2
 
 Let’s open common-resources app 
-*If you getting Origin not allowed error, you just need to re-start port forwarding and login again
+(Important note, optional)If you getting Origin not allowed error, you just need to re-start port forwarding and login again
 
 ```yaml
 taskkill /IM kubectl.exe /F
@@ -436,6 +406,17 @@ namespace: devbcn-demo
 patches:  
 - path: deployment-patch.yaml 
 ```
+
+Test it for correct namespace result
+```yaml
+kustomize build apps\frontend\envs\dev
+```
+
+!!! Important !!!
+Change this kustomize file both in workshop repo and your infrastructure-repo, save commit and push to remote !
+
+Frontend app is monitored by Argo CD from public remote repository infrastructure-repo.
+
 
 We need to click SYNC and then SYNCHRONIZE
 ![image](https://github.com/user-attachments/assets/a63596ee-7742-46e1-a736-51100fcfb903)

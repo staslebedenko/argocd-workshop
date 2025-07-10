@@ -158,7 +158,6 @@ Please double check that all changes in files are saved :), order of file creati
 First we will switch to the correct root folder in command line
 
 ```yaml
-cd ..
 cd 02_Argo_Projects_User_Kustomize/infrastructure-repo
 ```
 
