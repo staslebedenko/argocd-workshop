@@ -131,11 +131,6 @@ spec:
           ports:  
             - containerPort: 5000  
           env:  
-            - name: REDIS_CONN_STR  
-              valueFrom:  
-                secretKeyRef:  
-                  name: backend-secret  
-                  key: REDIS_CONN_STR  
             - name: CORS_ALLOWED_ORIGIN  
               valueFrom:  
                 configMapKeyRef:  
@@ -255,8 +250,6 @@ spec:
       selfHeal: true   
 ```
 
-common-app.yaml 
-
 ```yaml
 # argo-cd-apps/apps/common-app.yaml 
 apiVersion: argoproj.io/v1alpha1  
@@ -281,8 +274,6 @@ spec:
       selfHeal: true  
 ```
 
-frontend-application.yaml
-
 ```yaml
 # argo-cd-apps/apps/frontend-application.yaml
 apiVersion: argoproj.io/v1alpha1  
@@ -306,8 +297,6 @@ spec:
       prune: true  
       selfHeal: true  
 ```
-
-backend-application.yaml
 
 ```yaml
 # argo-cd-apps/frontend/backend-application.yaml
@@ -334,8 +323,7 @@ spec:
 ```
 
 First thing you can notice, that there is no Kustomize overlays for these manifests, as per Argo best practices, links below :). 
-So no validation with Kustomize, but syntax validation with kubectl is possible with dry run option.
-
+So no validation with Kustomize, but syntax validation with kubectl is possible with dry run option below.
 ```yaml
 kubectl apply --dry-run=client --validate=true -f argo-cd-apps/app-of-apps.yaml
 ```
@@ -374,10 +362,10 @@ And now it is time for the one last kubectl apply our app of apps manifest
 kubectl apply -f argo-cd-apps/app-of-apps.yaml
 ```
 
-Now we getting a new error with this deployment
+!!!Important thing!!! App of Apps manifest should target argocd namespace and argo project should allow this :), otherwise you can get error like below.
 ![image](https://github.com/user-attachments/assets/5fd474de-a6f9-4cae-81d4-0c5c8c8ca8d4)
 
-The root app of apps file should target namespace argo, but project devbcn-demo explicitly forbids any other namespaces, so we should change spec: project: devbcn-demo to common-resources to fix our problem
+The root app of apps file should always target destination namespace argo, but if for example, our project devbcn-demo will explicitly forbid any other namespaces, then we should explicitly set this App of Apps manifest to  common-resources project.
 
 ```yaml
 # argo-cd-apps/app-of-apps.yaml
@@ -401,15 +389,7 @@ spec:
       selfHeal: true   
 ```
 
-Apply manifest again and get 4 healthy applications
-
-```yaml
-kubectl apply -f argo-cd-apps/app-of-apps.yaml
-```
-
-![image](https://github.com/user-attachments/assets/3840b152-12be-4782-89d0-9942466db52c)
-
-## Observability
+## Observability - optional step
 
 Observability often a platform specific question, Azure, AWS, Splunk, DataDog, Dynatrace,
 

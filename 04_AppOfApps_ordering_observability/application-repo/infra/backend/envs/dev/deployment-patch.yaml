@@ -3,6 +3,8 @@ apiVersion: apps/v1
 kind: Deployment 
 metadata:  
   name: backend  
-  namespace: devbcn-demo 
+  namespace: devbcn-demo
+  annotations:  
+    argocd.argoproj.io/sync-wave: "2"   
 spec:  
   replicas: 2 

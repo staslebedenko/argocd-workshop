@@ -482,7 +482,7 @@ Whatever we will try to change in the sync, it will not help :)
 
 ## Auto healing
 
-We will reverting changes of devbcnnamespace and ensuring that frontend application is green
+We will reverting changes of devbcn namespace and ensuring that frontend application is green
 
 Open ArgoCD UI, select Frontend, click DETAILS ⇒ SUMMARY ⇒ EDIT = SYNC POLICY and click on to the SELF HEAL - ENABLE. You will see button DISABLE after change.
 
@@ -515,5 +515,14 @@ Lesson 2. Complexity raises fast, be aware that we are working now still with on
 - etc
 
 
+### (Optional)If you stuck with unhealthy Argo CRD app in deleting state
 
+```yaml
+
+kubectl patch app frontend -p '{"metadata": {"finalizers": null}}' --type merge
+kubectl patch crd frontend-test -p '{"metadata": {"finalizers": null}}' --type merge
+
+kubectl delete app frontend
+kubectl delete crd frontend-test
+```
 

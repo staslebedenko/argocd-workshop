@@ -65,3 +65,9 @@ and then apply
 ```yaml
 kubectl apply -f application-set.yaml  
 ```
+
+A few things to note, your application set is not visible in UI, only result applications
+
+```yaml
+argocd appset delete dev-infra-appset
+```
