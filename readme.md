@@ -1,7 +1,7 @@
-## GitOps via Argo CD
+## GitOps via Argo CD on Azure
 
 ### Requirements
-* Provisioned Kubernetes cluster on any cloud
+* Provisioned Kubernetes cluster on any cloud or Azure Container Apps
 * Command line tools Kubectl, Kustomize, Argo CD CLI
 * Optional Azure CLI if you working with Azure Kubernetes Service AKS
 
