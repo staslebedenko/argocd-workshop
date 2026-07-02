@@ -9,6 +9,7 @@
 - **Git for Windows** ([Installation instructions](https://git-scm.com/download/win))
 - **Argo CD CLI** (`argocd`) ([Installation instructions](https://argo-cd.readthedocs.io/en/stable/cli_installation/#windows))
 - **Kustomize CLI** ([Installation instructions](https://kubectl.docs.kubernetes.io/installation/kustomize/binaries/#windows))
+- **Azure CLI** ([Installation instructions](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-windows?view=azure-cli-latest&pivots=winget)) 
 Kustomize is also a part of kubectl :)
 
 Alternatively use following winget commands
@@ -16,6 +17,7 @@ winget install -e --id Kubernetes.kubectl
 winget install -e --id Git.Git
 winget install -e --id argoproj.argocd
 winget install -e --id Kubernetes.kustomize
+winget install --exact --id Microsoft.AzureCLI
 
 ### Instructions
 Each step of workshop contains own readme with detailed flow plus complete code.
