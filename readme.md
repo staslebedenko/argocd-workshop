@@ -1,9 +1,9 @@
 ## GitOps via Argo CD on Azure
 
 ### Requirements
-* Provisioned Kubernetes cluster on any cloud or Azure Container Apps
+* Provisioned Kubernetes cluster on any cloud
 * Command line tools Kubectl, Kustomize, Argo CD CLI
-* Optional Azure CLI if you working with Azure Kubernetes Service AKS
+* Optional Azure CLI if you are working with Azure Kubernetes Service AKS
 
 - **kubectl** ([Installation instructions](https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/))
 - **Git for Windows** ([Installation instructions](https://git-scm.com/download/win))
@@ -26,3 +26,4 @@ Each step of workshop contains own readme with detailed flow plus complete code.
 * 02_Argo_Projects_User_Kustomize
 * 03_App_deployment_first_issues
 * 04_AppOfApps_ordering_observability
+* 05_ApplicationSet_Summary

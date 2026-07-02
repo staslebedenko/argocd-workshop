@@ -1,4 +1,4 @@
-# argo-cd-apps/frontend/backend-application.yaml
+# argo-cd-apps/apps/backend-application.yaml
 apiVersion: argoproj.io/v1alpha1  
 kind: Application  
 metadata:  

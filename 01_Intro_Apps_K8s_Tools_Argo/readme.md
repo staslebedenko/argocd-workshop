@@ -16,9 +16,9 @@
 
 ## Applications
 Applications prepared as two custom containers plus Redis instance, containers already deployed to public Docker registry and referenced in yaml manifests.
-Plese do not deploy manifests with Kubectl, we will do this via Argo CD later.
+Please do not deploy manifests with Kubectl, we will do this via Argo CD later.
 
-I explained manifests and docker-compose setup at the end of this readmy, if case you will need it :).
+I explained manifests and docker-compose setup at the end of this readme, in case you need it :).
 
 ## Argo CD setup
 

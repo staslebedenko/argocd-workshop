@@ -36,7 +36,7 @@ argo-cd/
     └── dev/  
         ├── restrict-default-project.yaml  
         ├── argocd-cm-patch.yaml  
-        ├── argocd-rbac-cm.yaml  
+        ├── argocd-rbac-cm-patch.yaml  
         ├── project-devbcn-demo.yaml  
         └── kustomization.yaml
 ```
@@ -61,7 +61,7 @@ namespace: argocd
 
 And adding there 5 files below, they also just available in the folder
 
-**kustomization.yaml** - sets they yaml structure for building manifests
+**kustomization.yaml** - sets the yaml structure for building manifests
 ```yaml
 # argo-cd/envs/dev/kustomization.yaml  
 resources:  
@@ -153,7 +153,7 @@ Please double check that all changes in files are saved :), order of file creati
 
 ### Verifying that changes to Argo CD are correct and applying them to our Argo CD manually
 
-* We covering application GitOps automation within the first 5 steps of workshop to keep time and complexity at check, but of course Argo CD updates should be automated in a GitOps way as well. 
+* We are covering application GitOps automation within the first 5 steps of workshop to keep time and complexity at check, but of course Argo CD updates should be automated in a GitOps way as well. 
 
 First we will switch to the correct root folder in command line
 
@@ -161,7 +161,7 @@ First we will switch to the correct root folder in command line
 cd 02_Argo_Projects_User_Kustomize/infrastructure-repo
 ```
 
-Execute command below to output Argo CD manifests with our updates(assuming you at root)
+Execute command below to output Argo CD manifests with our updates (assuming you are at root)
 ```yaml
 kustomize build argo-cd\envs\dev\
 ```
@@ -171,7 +171,7 @@ Optional. To observe all change to Argo CD you can output result of combining in
 kustomize build argo-cd\envs\dev\ > result.yaml
 ```
 
-If result manifest successfully outputed to console, we can apply all changes to our Kubernetes cluster
+If result manifest successfully outputted to console, we can apply all changes to our Kubernetes cluster
 ```yaml
 kustomize build argo-cd\envs\dev\ | kubectl apply -f -  
 ```

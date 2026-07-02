@@ -5,7 +5,7 @@ metadata:
   name: common-resources  
   namespace: argocd  
 spec:  
-  description: "Project for coomon deployments"  
+  description: "Project for common deployments"  
   sourceRepos:  
     - "*" # Allow all repositories, or specify your Git repos explicitly  
   destinations:  

@@ -60,7 +60,7 @@ root/
 ├── infra/                                  
 │   ├── backend/  
 │   │   ├── base/
-│   │   │   ├── deployment.yam  
+│   │   │   ├── deployment.yaml  
 │   │   │   ├── service.yaml       
 │   │   │   └── kustomization.yaml  
 │   │   └── envs/  
@@ -83,7 +83,7 @@ A few steps here
 
 - Move frontend app manifests to application repository
 - Leave common manifest with Argo, since it is shared dependency
-- Re-arrange argo-cd-apps by deleting existing apps from ArgoCD and deleting namespace bevbcn-demo
+- Re-arrange argo-cd-apps by deleting existing apps from ArgoCD and deleting namespace devbcn-demo
 
 ## Backend manifests introduction
 
@@ -201,7 +201,7 @@ patches:
 - path: backend-configmap-patch.yaml  
 ```
 
-Before committing file, please double check them for errors with Kustomize build command, assuming you at the root folder of application repository, run commands below
+Before committing file, please double check them for errors with Kustomize build command, assuming you are at the root folder of application repository, run commands below
 
 ```yaml
 kustomize build infra/backend/envs/dev/
@@ -238,7 +238,7 @@ metadata:
 spec:  
   project: devbcn-demo                 # or existing project name  
   source:  
-    repoURL: https://github.com/staslebedenko/dev-infrastructure.git  
+    repoURL: https://github.com/staslebedenko/infrastructure-repo.git  
     targetRevision: HEAD  
     path: step-4/argo-cd-apps/apps        # child folder containing child manifests  
   destination:  
@@ -299,7 +299,7 @@ spec:
 ```
 
 ```yaml
-# argo-cd-apps/frontend/backend-application.yaml
+# argo-cd-apps/apps/backend-application.yaml
 apiVersion: argoproj.io/v1alpha1  
 kind: Application  
 metadata:  
@@ -365,7 +365,7 @@ kubectl apply -f argo-cd-apps/app-of-apps.yaml
 !!!Important thing!!! App of Apps manifest should target argocd namespace and argo project should allow this :), otherwise you can get error like below.
 ![image](https://github.com/user-attachments/assets/5fd474de-a6f9-4cae-81d4-0c5c8c8ca8d4)
 
-The root app of apps file should always target destination namespace argo, but if for example, our project devbcn-demo will explicitly forbid any other namespaces, then we should explicitly set this App of Apps manifest to  common-resources project.
+The root app of apps file should always target destination namespace argocd, but if for example, our project devbcn-demo will explicitly forbid any other namespaces, then we should explicitly set this App of Apps manifest to  common-resources project.
 
 ```yaml
 # argo-cd-apps/app-of-apps.yaml
@@ -377,7 +377,7 @@ metadata:
 spec:  
   project: common-resources                 # or existing project name  
   source:  
-    repoURL: https://github.com/staslebedenko/dev-infrastructure.git  
+    repoURL: https://github.com/staslebedenko/infrastructure-repo.git  
     targetRevision: HEAD  
     path: step-4/argo-cd-apps/apps        # parent folder containing child manifests  
   destination:  
@@ -391,7 +391,7 @@ spec:
 
 ## Observability - optional step
 
-Observability often a platform specific question, Azure, AWS, Splunk, DataDog, Dynatrace,
+Observability is often a platform specific question, Azure, AWS, Splunk, DataDog, Dynatrace,
 
 so we touch location command line wise and I will leave azure integration instruction 
 
@@ -504,7 +504,7 @@ To get default instance:  DefaultAzureMonitorWorkspace-westeurope
 az resource list --resource-type microsoft.monitor/accounts --query "[?contains(name,'DefaultAzureMonitorWorkspace')].{Name:name, ID:id}" -o table  
 ```
 
-Appy cluster manifest
+Apply cluster manifest
 
 ```yaml
 apiVersion: azmonitoring.coreos.com/v1
@@ -579,13 +579,13 @@ KubeEvents
 
 ```
 
-Import official Graphana dashboard from Argo labs
+Import official Grafana dashboard from Argo labs
 https://grafana.com/grafana/dashboards/14584-argocd/
 
 With command below 
 
 ```yaml
-az grafana dashboard import --name argocd --resource-group igor-demo --definition 14584
+az grafana dashboard import --name argocd --resource-group devbcn-demo --definition 14584
 ```
 
 ## End

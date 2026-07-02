@@ -229,7 +229,7 @@ metadata:
 spec:  
   project: devbcn-demo  
   source:  
-    repoURL: https://github.com/staslebedenko/dev-infrastructure.git  
+    repoURL: https://github.com/staslebedenko/infrastructure-repo.git  
     targetRevision: HEAD  
     path: step-3/apps/frontend/envs/dev  
   destination:  
@@ -294,7 +294,7 @@ metadata:
   name: common-resources  
   namespace: argocd  
 spec:  
-  description: "Project for coomon deployments"  
+  description: "Project for common deployments"  
   sourceRepos:  
     - "*" # Allow all repositories, or specify your Git repos explicitly  
   destinations:  

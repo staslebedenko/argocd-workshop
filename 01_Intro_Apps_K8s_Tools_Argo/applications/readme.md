@@ -13,13 +13,13 @@ Navigate to [http://localhost:8080](http://localhost:8080/) to access frontend a
 If you need to work with Redis from your local docker compose, please execute all steps below and run command
 
 ```yaml
-kubectl port-forward svc/redis -n devbcn 6379:6379
+kubectl port-forward svc/redis -n devbcn-demo 6379:6379
 ```
 
 ## Container preparation from repository
 https://github.com/staslebedenko/DevBcn25-containers-without-Argo
 
-Open cmd shell on Windows, login to your docker registry, build two containers and push them to registry. Make sure you in the root directory where file docker-compose located.
+Open cmd shell on Windows, login to your docker registry, build two containers and push them to registry. Make sure you are in the root directory where the docker-compose file is located.
 
 ```yaml
 docker login
@@ -39,7 +39,7 @@ az aks get-credentials --resource-group devbcn-demo --name devbcn-cluster
 kubectl config use-context devbcn-cluster
 ```
 
-## Please skip this step, this is needed only for case when you having issues with applications with your own changes.
+## Please skip this step, this is needed only for the case when you are having issues with applications with your own changes.
 
 ```yaml
 kubectl apply -f applications/namespace.yaml
@@ -54,9 +54,8 @@ Check deployed services with following commands
 
 ```yaml
 kubectl get configmaps,svc -n devbcn-demo
-kubectl get configmaps -n guestbook
-kubectl get svc frontend 
-kubectl get svc backend
+kubectl get svc frontend -n devbcn-demo
+kubectl get svc backend -n devbcn-demo
 ```
 
 if you need to delete namespace after manual deployment and testing
@@ -70,15 +69,15 @@ if you need to rebuild container and redeploy your code
 ```yaml
 docker build -t stasiko/funneverends-frontend:latest ./frontend
 docker push stasiko/funneverends-frontend:latest
-kubectl rollout restart deployment/frontend -n devbcn
+kubectl rollout restart deployment/frontend -n devbcn-demo
 
 docker build -t stasiko/funneverends-backend:latest -f backend/Dockerfile ./backend
 docker push stasiko/funneverends-backend:latest
-kubectl rollout restart deployment backend -n devbcn
+kubectl rollout restart deployment backend -n devbcn-demo
 
-kubectl rollout status deployment backend -n devbcn
-kubectl describe deployment backend -n devbcn
-kubectl get pods -n devbcn
+kubectl rollout status deployment backend -n devbcn-demo
+kubectl describe deployment backend -n devbcn-demo
+kubectl get pods -n devbcn-demo
 ```
 
 To access and check if applications working you need to start port forwarding as background tasks
@@ -89,7 +88,7 @@ kubectl port-forward svc/frontend -n devbcn-demo 8080:80 &
 kubectl port-forward svc/redis -n devbcn-demo 6379:6379 &
 ```
 
-Then access [http://localhost:8080](http://localhost:8080/) and check if your resources working. 
+Then access [http://localhost:8080](http://localhost:8080/) and check if your resources are working. 
 
 And don’t forget to kill these processes afterwards with
 
