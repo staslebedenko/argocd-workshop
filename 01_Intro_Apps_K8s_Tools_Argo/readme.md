@@ -32,16 +32,25 @@ Deploy AKS cluster
 az group create --name devbcn-demo --location westeurope
 az aks create --name devbcn-cluster --resource-group devbcn-demo --location westeurope --node-resource-group devbcn-demo-resources --enable-managed-identity --node-count 2 --generate-ssh-keys --enable-oidc-issuer --enable-workload-identity  
 ```
+* Do not pin `--node-vm-size` - leave it out and let Azure pick the default for your subscription. On some subscriptions the default VM size can come back as one that isn't allowed (e.g. `The VM size of Standard_D8a_v4 is not allowed in your subscription`). If that happens, just retry the same command again (Azure's default selection can vary between attempts), or list sizes allowed in your subscription/region and pass one explicitly with `--node-vm-size`:
+```yaml
+az vm list-skus --location westeurope --resource-type virtualMachines --all --query "[?restrictions[0].reasonCode==null].name" -o table
+```
+* If a previous `az aks create` attempt failed partway (e.g. due to an invalid VM size) and a retry with the **same** cluster/resource group name gets stuck in `Creating` for a long time or ends up `Canceled`, don't keep waiting - delete both the resource group and its auto-generated node resource group (`<resource-group>-resources`), then retry with a fresh `az aks create`:
+```yaml
+az group delete --name devbcn-demo --yes --no-wait
+az group delete --name devbcn-demo-resources --yes --no-wait
+```
 
 After cluster deployment we need to connect to it and add to local kube context
 
 Login to Azure AKS access token and switch context to the current cluster
 ```yaml
 az aks get-credentials --resource-group devbcn-demo --name devbcn-cluster --admin
-kubectl config use-context devbcn-cluster
+kubectl config use-context devbcn-cluster-admin
 kubectl get all
 ```
-* Please look at command line output for which name cluster is merged, you can use kubectl config get-contexts  to locate the correct context name
+* The `--admin` flag merges the context as `<cluster-name>-admin` (e.g. `devbcn-cluster-admin`), not just `<cluster-name>` - use `kubectl config get-contexts` to double check the exact name if `use-context` fails.
 
 The next step would be setup default instance of Argo CD from public manifest 
 ```yaml
@@ -89,6 +98,8 @@ argocd app list
 
 Step above might not work if your port forwarding is not active, if this is the case please restart it.
 
+* Note: any time you apply a change to Argo CD's own config (`argocd-cm`, `argocd-rbac-cm`, `argocd-cmd-params-cm`, etc. - this happens a lot from step 2 onwards), the `argocd-server` pod restarts to pick it up. Any running `kubectl port-forward` will die with `error: lost connection to pod` - just re-run the port-forward command. The `argocd` CLI may also show a one-time `server certificate had error ... Proceed insecurely (y/n)?` prompt afterwards (the pod's self-signed cert changed) - answer `y` and it won't ask again until the pod restarts again.
+
 
 Alternative PowerShell terminal command for port-forwarding
 ```yaml
@@ -115,12 +126,21 @@ Repeating kubectl cleanup command
 taskkill /IM kubectl.exe /F
 ```
 
+## Summary
+
+By now you should have:
+- A running AKS cluster with a default Argo CD instance installed from the public manifest.
+- The admin password retrieved and a working login via both the UI and the `argocd` CLI.
+- Sample containers (frontend/backend/redis) built and understood, but **not yet deployed** through Argo - that's the whole point of the next steps :)
+
+Key takeaway: everything so far was done manually with `kubectl`/`az`/`argocd` CLI directly against the cluster - there is no Git repo driving any of this yet. Step 2 starts turning that around.
+
 ## Final notes
 
 We approaching the main part of the workshop, please create new public github repositories
 
 ```yaml
-infrastructure
+infrastructure-repo
 application-repo
 ```
 

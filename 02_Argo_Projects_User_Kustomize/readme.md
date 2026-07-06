@@ -114,17 +114,16 @@ metadata:
   namespace: argocd  
 data:  
   policy.csv: |  
-    g, devbcn, role:devbcn-demo-admin  
+    # allow full application access only within devbcn-demo project  
+    p, role:devbcn-demo-admin, applications, *, devbcn-demo/*, allow  
+    # allow read access to project details (recommended)  
+    p, role:devbcn-demo-admin, projects, get, devbcn-demo, allow  
+    g, devbcn-user, role:devbcn-demo-admin  
   policy.default: role:readonly  
   scopes: '[groups]'  
-policy.roles: |  
-  # deny all global configuration actions  
-  p, role:devbcn-demo-admin, *, *, *, deny  
-  # allow full application access only within devbcn-demo project  
-  p, role:devbcn-demo-admin, applications, *, devbcn-demo/*, allow  
-  # allow read access to project details (recommended)  
-  p, role:devbcn-demo-admin, projects, get, devbcn-demo, allow
 ```
+* Note: Argo CD only reads policy rules from the `policy.csv` key - everything (both `p` permission rules and `g` group/user bindings) must live there. A separate `policy.roles` key (or any other custom key) is silently ignored.
+* Note: avoid a broad `p, role:..., *, *, *, deny` rule here - Argo CD's RBAC evaluates an explicit `deny` as always overriding any `allow`, so a wildcard deny like that cancels out the specific allow rules above it. Anything not explicitly allowed is denied by default anyway.
 
 **project-devbcn-demo.yaml**
 ```yaml
@@ -177,6 +176,7 @@ kustomize build argo-cd\envs\dev\ | kubectl apply -f -
 ```
 ![image](https://github.com/user-attachments/assets/b12abc1e-eab8-4a96-8c55-b09df288dd11)
 
+* This patches `argocd-cm` and `argocd-rbac-cm`, which restarts the `argocd-server` pod - your `kubectl port-forward` from step 1 will drop (`error: lost connection to pod`). Just restart it and, if prompted, re-login with the `argocd` CLI (see the note at the end of step 1).
 
 To verify new project creation
 ```yaml
@@ -251,3 +251,13 @@ https://github.com/staslebedenko/infrastructure-repo.git
 ```
 
 This concludes part 2, and real fun begins :)
+
+### Summary
+
+Lesson 1. The default Argo CD project is wide-open by default (any repo, any cluster, any namespace) - locking it down first and creating a dedicated project per team/app is the safer pattern.
+
+Lesson 2. Kustomize `base` + `envs/<env>` overlays are how we'll structure every app and every piece of Argo CD config from here on - get comfortable with `kustomize build` as your local "what will actually get applied" preview.
+
+Lesson 3. RBAC in Argo CD lives entirely in `policy.csv` inside `argocd-rbac-cm` - group/user bindings (`g, ...`) and permission rules (`p, ...`) both have to be in that one key, and an overly broad `deny` rule can silently cancel out your `allow` rules.
+
+Next step: we finally deploy an actual application through Argo CD, and hit (and fix) our first real sync errors.

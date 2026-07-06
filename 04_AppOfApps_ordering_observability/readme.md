@@ -1,4 +1,4 @@
-# ArgoCD 4. AppOfApps_ordering_observability
+# Step 4. App of Apps, ordering and observability
 
 Repository with application code and app infra
 
@@ -476,6 +476,7 @@ If all is ok, then go with
 ```yaml
 kustomize build argo-cd\envs\dev\ | kubectl apply -f -  
 ```
+* Again, this restarts `argocd-server` (config changed) - restart your `kubectl port-forward` and re-login with the CLI if needed (see step 1's note).
 
 ## (Optional)Observability with app insights
 
@@ -587,6 +588,16 @@ With command below
 ```yaml
 az grafana dashboard import --name argocd --resource-group devbcn-demo --definition 14584
 ```
+
+## Summary
+
+Lesson 1. App-of-Apps turns "apply N Application manifests by hand" into "apply one root Application, let it manage the rest" - the root app just points at a folder of child Application manifests.
+
+Lesson 2. Sync-wave ordering (`argocd.argoproj.io/sync-wave`) is cooperative, not a guarantee - if an earlier wave fails to render at all (bad path, bad repo), Argo CD may still consider it "done" and move on. Don't rely on waves alone for critical ordering; verify actual resource health too.
+
+Lesson 3. The root App-of-Apps manifest's own `project` and `destination.namespace` matter - it needs a project that allows deploying into the `argocd` namespace itself, or you'll get a confusing rejection.
+
+With backend + frontend + common resources all flowing through Git now, step 5 shows how to stop hand-writing near-identical Application manifests for each one.
 
 ## End
 

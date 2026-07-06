@@ -5,13 +5,8 @@ metadata:
   namespace: argocd  
 data:  
   policy.csv: |  
-    g, devbcn, role:devbcn-demo-admin  
+    p, role:devbcn-demo-admin, applications, *, devbcn-demo/*, allow  
+    p, role:devbcn-demo-admin, projects, get, devbcn-demo, allow  
+    g, devbcn-user, role:devbcn-demo-admin  
   policy.default: role:readonly  
   scopes: '[groups]'  
-  policy.roles: |  
-    # allow full application access within devbcn-demo project  
-    p, role:devbcn-demo-admin, applications, *, devbcn-demo/*, allow  
-    # allow read access to project details (recommended)  
-    p, role:devbcn-demo-admin, projects, get, devbcn-demo, allow  
-    # deny all other global configuration actions  
-    p, role:devbcn-demo-admin, *, *, *, deny  

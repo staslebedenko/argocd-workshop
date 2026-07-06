@@ -22,8 +22,8 @@ winget install --exact --id Microsoft.AzureCLI
 ### Instructions
 Each step of workshop contains own readme with detailed flow plus complete code.
 
-* 01_Intro_Apps_K8s_Tools_Argo
-* 02_Argo_Projects_User_Kustomize
-* 03_App_deployment_first_issues
-* 04_AppOfApps_ordering_observability
-* 05_ApplicationSet_Summary
+* [01_Intro_Apps_K8s_Tools_Argo](01_Intro_Apps_K8s_Tools_Argo/readme.md) - what GitOps is, provisioning AKS, installing Argo CD, and the sample apps we'll deploy throughout the workshop.
+* [02_Argo_Projects_User_Kustomize](02_Argo_Projects_User_Kustomize/readme.md) - restricting the default Argo CD project, adding a scoped user/project, and Kustomize base/overlay basics.
+* [03_App_deployment_first_issues](03_App_deployment_first_issues/readme.md) - deploying your first app via Argo CD Applications, and debugging real sync/health errors (paths, projects, namespace drift) as they happen.
+* [04_AppOfApps_ordering_observability](04_AppOfApps_ordering_observability/readme.md) - splitting infra/app repos, the App-of-Apps pattern, sync-wave ordering, and basic observability.
+* [05_ApplicationSet_Summary](05_ApplicationSet_Summary/readme.md) - replacing repetitive Application manifests with a single ApplicationSet, plus a wrap-up of the whole workshop.

@@ -251,7 +251,7 @@ First - please commit all files above to git repo and push it to your public git
 
 Please do the switch context to your cluster, to avoid problems :)
 ```yaml
-kubectl config use-context devbcn-cluster
+kubectl config use-context devbcn-cluster-admin
 kubectl get ns
 ```
 You should have following namespace list as output
