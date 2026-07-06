@@ -1,4 +1,4 @@
-# apps/backend/envs/dev/deployment-patch.yaml
+# infra/backend/envs/dev/backend-configmap-patch.yaml
 apiVersion: v1  
 kind: ConfigMap  
 metadata:  

@@ -12,7 +12,7 @@ So far we have setup only Argo and its configuration structure, while working fr
 ### Repository structure evolution
 
 Now it is evolving to the following structure. 
-```yaml
+```text
 infrastructure-repo/  
 ├── apps/                                 # Kubernetes application manifests  
 │   ├── common/  
@@ -56,7 +56,7 @@ infrastructure-repo/
 ### Applications
 First we need to switch root in the command line from previous one
 
-```yaml
+```bash
 cd ..
 cd ..
 cd 03_App_deployment_first_issues/infrastructure-repo
@@ -84,7 +84,7 @@ resources:
 ```
 
 Validate changes with command below, assuming that terminal is at root folder
-```yaml
+```bash
 kustomize build apps/common/base/
 ```
 
@@ -173,14 +173,14 @@ patches:
 ```
 
 Validate changes with 
-```yaml
+```bash
 kustomize build apps/frontend/envs/dev/
 ```
 
 (Sidenote)As you know, kustomize is a part of kubectl, so command below will also work. 
 We separating them to make avoid mess
 
-```yaml
+```bash
 kubectl kustomize apps/frontend/envs/dev/
 ```
 
@@ -243,6 +243,8 @@ spec:
 
 Argo CD sync waves allow you to orchestrate the deployment order of Kubernetes resources by adding annotations ([argocd.argoproj.io/sync-wave](http://argocd.argoproj.io/sync-wave)) to your manifests. Resources with lower sync-wave numbers (e.g., "0") are synchronized first, and only after they are successfully deployed does Argo CD proceed to resources with higher wave numbers (e.g., "1", "2", etc.). This helps manage dependencies clearly, ensuring critical resources—such as namespaces, CRDs, or other prerequisites—are deployed successfully before the applications or services relying on them begin deployment, thus providing safer and more controlled rollouts.
 
+One important caveat: waves order resources **within a single Application's sync**. In this step we apply the two Application manifests directly with kubectl, so nothing syncs them as a pair and the annotations have no effect yet - they will start working in step 4, when a parent App-of-Apps deploys both of them. We will bump into this in Error 3 below.
+
 ## Deployment fun
 
 Now we will try to deploy our applications and fix some errors along the way.
@@ -250,7 +252,7 @@ Now we will try to deploy our applications and fix some errors along the way.
 First - please commit all files above to git repo and push it to your public github repo, into the `step-3/` folder (see the step-N convention from step 2). Make sure the `repoURL` in both Application manifests above points to **your** repository - the later exercises ask you to fix issues by pushing changes, which only works against your own repo.  
 
 Please do the switch context to your cluster, to avoid problems :)
-```yaml
+```bash
 kubectl config use-context devbcn-cluster-admin
 kubectl get ns
 ```
@@ -258,14 +260,16 @@ You should have following namespace list as output
 ![image](https://github.com/user-attachments/assets/f452d615-cbf5-40f8-ae6d-d2c4d5688058)
 
 Check if Argo is accessible via [localhost:8080](http://localhost:8080) - if not, restart port forwarding below
-```yaml
-kubectl port-forward svc/argocd-server -n argocd 8080:443 &
+```bash
+kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
+
+Important: log in to the UI as **admin** for this step. Step 2 left you logged in as `devbcn-user`, whose RBAC only covers the `devbcn-demo` project - the `common-resources` application we are about to create would be invisible (and not editable) for that user.
 
 Then proceed with manual deployment of namespace and frontend app from the root. 
 We will automate this during the next step of workshop with App of Apps pattern.
 
-```yaml
+```bash
 kubectl apply -n argocd -f argo-cd-apps/common/common-app.yaml 
 kubectl apply -n argocd -f argo-cd-apps/frontend/frontend-application.yaml
 ```
@@ -326,13 +330,13 @@ patches:
 ```
 
 Test it
-```yaml
+```powershell
 kustomize build argo-cd\envs\dev\
 ```
 
 And apply Argo CD changes
 
-```yaml
+```powershell
 kustomize build argo-cd\envs\dev\ | kubectl apply -f -
 ```
 
@@ -344,9 +348,9 @@ Let’s check status in UI :)And update kustomize to include this file
 Let’s open common-resources app 
 (Important note, optional)If you getting Origin not allowed error, you just need to re-start port forwarding and login again
 
-```yaml
+```powershell
 taskkill /IM kubectl.exe /F
-kubectl port-forward svc/argocd-server -n argocd 8080:443 &
+kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
 ![image](https://github.com/user-attachments/assets/1fb932cd-83e2-4dfa-bb7f-5465e71313d4)
@@ -363,7 +367,7 @@ Click SAVE and click to EVENTS to see that Sync operation succeeded.
 
 If you will check with command below, you will see that new namespace is available
 
-```yaml
+```bash
 kubectl get namespaces
 ```
 
@@ -371,12 +375,13 @@ kubectl get namespaces
 
 ### Error 3
 
-Lets have a look at Frontend. With waves approach sync should not be started, or is it?
+Lets have a look at Frontend. Since common-resources (wave `0`) is broken, the frontend sync (wave `1`) should not even start... or should it?
 
-- If Wave `0` manifests **fail to render** (due to incorrect paths or invalid manifests), Argo CD will NOT create those resources at all, and the sync will show a `ComparisonError`.
-- Because Wave `0` resources are never successfully synced (not created), Argo CD will **not proceed** to deploy Wave `1`.However, if Wave `0` has no resources at all (for example, due to a manifest rendering issue, Argo CD sees nothing to deploy), it may skip directly to Wave `1`. This can be confusing.
-- If Wave `0` is empty (no resources created at all due to manifest errors), Argo CD treat that wave as trivially complete and proceed to Wave `1`.
-- If Wave `0` has resources defined but fails due to **Kubernetes errors at apply-time** (e.g., validation errors, admission controllers, etc.), Argo CD stops and won't proceed to the next waves.
+It does start - and that surprises many people. The `argocd.argoproj.io/sync-wave` annotations we put on the two Application manifests do **nothing** in this setup:
+
+- Sync waves order resources **inside a single sync operation of one Application**. When we `kubectl apply` two separate Applications directly, there is no parent operation that spans them - each Application syncs on its own, in parallel, and never looks at the other's wave number.
+- The annotations only become meaningful in the next step, when a parent "App of Apps" Application deploys both of these as *its* resources - then the parent's sync respects the waves and creates common-resources before frontend.
+- So the frontend is not waiting for common-resources at all. If it shows a problem, it is a problem of its own - lets find it.
 
 ![image](https://github.com/user-attachments/assets/00ed35af-07f3-44f9-ae2f-295ff868a8d8)
 
@@ -408,7 +413,7 @@ patches:
 ```
 
 Test it for correct namespace result
-```yaml
+```powershell
 kustomize build apps\frontend\envs\dev
 ```
 
@@ -466,7 +471,7 @@ patches:
 
 Test if result manifest change to the new namespace with
 
-```yaml
+```bash
 kustomize build apps/frontend/envs/dev/
 ```
 And commit back to our repository, to see that we now have a Sync failed
@@ -488,7 +493,7 @@ Open ArgoCD UI, select Frontend, click DETAILS ⇒ SUMMARY ⇒ EDIT = SYNC POLIC
 
 Then we will delete our Frontend service with kubectl command
 
-```yaml
+```bash
 kubectl -n devbcn-demo delete deployment frontend
 ```
 

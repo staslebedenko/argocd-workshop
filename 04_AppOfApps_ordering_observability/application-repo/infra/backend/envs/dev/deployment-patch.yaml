@@ -1,4 +1,4 @@
-# apps/backend/envs/dev/deployment-patch.yaml
+# infra/backend/envs/dev/deployment-patch.yaml
 apiVersion: apps/v1  
 kind: Deployment 
 metadata:  

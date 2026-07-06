@@ -13,21 +13,21 @@
 
 ### Pre-flight checks
 Check 
-```yaml
+```bash
 kustomize version
 argocd version
 kubectl get all -n argocd
 ```
 
-if argo connection is not available, please run port forwarding below in powershell console
-```yaml
-kubectl port-forward svc/argocd-server -n argocd 8080:443 &
+if argo connection is not available, please run port forwarding below in a **separate** terminal and keep it running (the command blocks; a trailing & backgrounds it in bash, but is a syntax error in Windows PowerShell)
+```bash
+kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
 Also, you should do Argo login to cluster with cli from step 1
 
 **Infrastructure repository structure**
-```yaml
+```text
 argo-cd/  
 ├── base/  
 │   ├── install.yaml  
@@ -44,7 +44,7 @@ argo-cd/
 ### Setting up Argo base manifest
 
 **install.yaml** - adding it from public agro url to base folder argo-cd/base
-```yaml
+```text
 https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
@@ -156,22 +156,22 @@ Please double check that all changes in files are saved :), order of file creati
 
 First we will switch to the correct root folder in command line
 
-```yaml
+```bash
 cd 02_Argo_Projects_User_Kustomize/infrastructure-repo
 ```
 
 Execute command below to output Argo CD manifests with our updates (assuming you are at root)
-```yaml
+```powershell
 kustomize build argo-cd\envs\dev\
 ```
 
 Optional. To observe all change to Argo CD you can output result of combining install.yaml with all files referenced in Kustomize file to the new file result.yaml. Don’t forget to delete it afterwards from root folder.
-```yaml
+```powershell
 kustomize build argo-cd\envs\dev\ > result.yaml
 ```
 
 If result manifest successfully outputted to console, we can apply all changes to our Kubernetes cluster
-```yaml
+```powershell
 kustomize build argo-cd\envs\dev\ | kubectl apply -f -  
 ```
 ![image](https://github.com/user-attachments/assets/b12abc1e-eab8-4a96-8c55-b09df288dd11)
@@ -179,12 +179,12 @@ kustomize build argo-cd\envs\dev\ | kubectl apply -f -
 * This patches `argocd-cm` and `argocd-rbac-cm`, which restarts the `argocd-server` pod - your `kubectl port-forward` from step 1 will drop (`error: lost connection to pod`). Just restart it and, if prompted, re-login with the `argocd` CLI (see the note at the end of step 1).
 
 To verify new project creation
-```yaml
+```bash
 kubectl get appproject -n argocd devbcn-demo
 ```
 
 (Optional) You can also deploy folders with kustomize overlays with kubectl, because kustomize is also part of kubectl
-```yaml
+```powershell
 kubectl apply -k argo-cd\envs\dev\ 
 ```
 
@@ -194,14 +194,14 @@ kubectl apply -k argo-cd\envs\dev\
 So, After creating the new user, we need to set a new password for it.
 
 First we need to check if we are logged in with Argo cli
-```yaml
+```bash
 argocd account get-user-info
 ```
 
 Set user a new password for devbcn-demo user below, don’t forget to add your admin password below.
 
-```yaml
-argocd account update-password --server localhost:8080 --insecure --account devbcn-user --new-password password1234 --current-password supersecret:)
+```bash
+argocd account update-password --server localhost:8080 --insecure --account devbcn-user --new-password password1234 --current-password "<your-admin-password>"
 ```
 Login with your new user to Argo CD by entering new login: devbcn-user and password
 
@@ -211,29 +211,29 @@ You should see empty UI and have access to the new project devbcn-demo
 
 It means that you need to login with admin account to Argo CD CLI and then return to setting password above
 
-Start port forwarding to access our instance
+Start port forwarding to access our instance, in a separate terminal (the command blocks)
 
-```yaml
-kubectl port-forward svc/argocd-server -n argocd 8080:443 &
+```bash
+kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
 Then update command below with your admin password and run it, --insecure used because of custom certificate.
 
-```yaml
-argocd login localhost:8080 --username admin --password supersecret:)  --insecure
+```bash
+argocd login localhost:8080 --username admin --password "<your-admin-password>" --insecure
 ```
 
 Check access and current user
 
-```yaml
+```bash
 argocd app list
 argocd account get-user-info  
 ```
 
 Set user a new password below, don’t forget to add your admin password below.
 
-```yaml
-argocd account update-password --server localhost:8080 --insecure --account devbcn-user --new-password password1234 --current-password supersecret:)
+```bash
+argocd account update-password --server localhost:8080 --insecure --account devbcn-user --new-password password1234 --current-password "<your-admin-password>"
 ```
 
 Login with your new user to Argo CD by entering new login: devbcn-user and password
@@ -248,7 +248,7 @@ Please add changes above to your public github repository, except for passwords 
 Important: this workshop keeps each module's state in a `step-N/` folder inside the repository — push this module's content into a `step-2/` folder of your `infrastructure-repo`. Later modules reference paths like `step-3/apps/...` and `step-4/argo-cd-apps/...` in Application manifests, so keeping this layout means the manifests work with your repository after you replace the repo URL with your own.
 
 My repository for infrastructure, structured the same way, for reference:
-```
+```text
 https://github.com/staslebedenko/infrastructure-repo.git
 ```
 

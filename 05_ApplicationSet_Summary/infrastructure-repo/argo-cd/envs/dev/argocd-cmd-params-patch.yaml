@@ -1,0 +1,9 @@
+# argo-cd/envs/dev/argocd-cmd-params-patch.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cmd-params-cm
+  namespace: argocd
+data:
+  server.log.format: "json"
+  server.log.level: "info"

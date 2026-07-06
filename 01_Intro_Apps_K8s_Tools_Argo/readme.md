@@ -23,21 +23,21 @@ I explained manifests and docker-compose setup at the end of this readme, in cas
 ## Argo CD setup
 
 Login to Azure with device code from CMD
-```yaml
+```bash
 az login --use-device-code
 ```
 
 Deploy AKS cluster
-```yaml
+```bash
 az group create --name devbcn-demo --location westeurope
 az aks create --name devbcn-cluster --resource-group devbcn-demo --location westeurope --node-resource-group devbcn-demo-resources --enable-managed-identity --node-count 2 --generate-ssh-keys --enable-oidc-issuer --enable-workload-identity  
 ```
 * Do not pin `--node-vm-size` - leave it out and let Azure pick the default for your subscription. On some subscriptions the default VM size can come back as one that isn't allowed (e.g. `The VM size of Standard_D8a_v4 is not allowed in your subscription`). If that happens, just retry the same command again (Azure's default selection can vary between attempts), or list sizes allowed in your subscription/region and pass one explicitly with `--node-vm-size`:
-```yaml
+```bash
 az vm list-skus --location westeurope --resource-type virtualMachines --all --query "[?restrictions[0].reasonCode==null].name" -o table
 ```
 * If a previous `az aks create` attempt failed partway (e.g. due to an invalid VM size) and a retry with the **same** cluster/resource group name gets stuck in `Creating` for a long time or ends up `Canceled`, don't keep waiting - delete both the resource group and its auto-generated node resource group (`<resource-group>-resources`), then retry with a fresh `az aks create`:
-```yaml
+```bash
 az group delete --name devbcn-demo --yes --no-wait
 az group delete --name devbcn-demo-resources --yes --no-wait
 ```
@@ -45,7 +45,7 @@ az group delete --name devbcn-demo-resources --yes --no-wait
 After cluster deployment we need to connect to it and add to local kube context
 
 Login to Azure AKS access token and switch context to the current cluster
-```yaml
+```bash
 az aks get-credentials --resource-group devbcn-demo --name devbcn-cluster --admin
 kubectl config use-context devbcn-cluster-admin
 kubectl get all
@@ -53,7 +53,7 @@ kubectl get all
 * The `--admin` flag merges the context as `<cluster-name>-admin` (e.g. `devbcn-cluster-admin`), not just `<cluster-name>` - use `kubectl config get-contexts` to double check the exact name if `use-context` fails.
 
 The next step would be setup default instance of Argo CD from public manifest 
-```yaml
+```bash
 kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
@@ -63,27 +63,27 @@ kubectl get all -n argocd
 Next we need to output admin password for the instance we just deployed 
 
 PS(Powershell) terminal (I'm using one in Visual Studio Code)
-```yaml
+```powershell
 $encodedPass = kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}"  
 [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($encodedPass))  
 ```
 
 (Optional)CMD terminal
-```yaml
+```cmd
 for /f %i in ('kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath^="{.data.password}"') do @powershell "[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String(\"%i\"))"  
 ```
 
 (Optional)Bash terminal
-```yaml
+```bash
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode; echo  
 ```
 
 Please record your password somewhere to use later, it looks something like below :)
 C6#453$#532432E
 
-Start background port forwarding and login to our Argo CD instance
-```yaml
-kubectl port-forward svc/argocd-server -n argocd 8080:443 &
+Start port forwarding and login to our Argo CD instance. The command occupies the terminal, so run it in a second terminal window and keep it running (in bash you can append `&` to background it; PowerShell does not support trailing `&` - use the `Start-Job` variant shown a bit below)
+```bash
+kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 Navigate to https://localhost:8080/ and login with login admin and password from console output above.
 
@@ -91,7 +91,7 @@ Navigate to https://localhost:8080/ and login with login admin and password from
 
 It is also time to login with Argo CD CLI, this will be needed at the next step, replace password with your console output earlier
 
-```yaml
+```bash
 argocd login localhost:8080 --username admin --password yourconsolepass  --insecure
 argocd app list  
 ```
@@ -102,11 +102,11 @@ Step above might not work if your port forwarding is not active, if this is the 
 
 
 Alternative PowerShell terminal command for port-forwarding
-```yaml
+```powershell
 $job = Start-Job -ScriptBlock { kubectl port-forward svc/argocd-server -n argocd 8080:443 }
 ```
 And killing of the process
-```yaml
+```powershell
 Stop-Job $job  
 Remove-Job $job
 ```
@@ -115,16 +115,12 @@ Visit [https://localhost:8080](https://localhost:8080/)  Argo CD URL and login
 
 Also make sure that you can login with Argo CD CLI, because this will be needed at the next step
 
-```yaml
+```bash
 argocd logout localhost:8080 
-argocd login localhost:8080 --username admin --password C6#453$#532432E  --insecure
+argocd login localhost:8080 --username admin --password "<your-password>" --insecure
 argocd app list  
 ```
-
-Repeating kubectl cleanup command
-```yaml
-taskkill /IM kubectl.exe /F
-```
+Keep the password quoted - initial Argo CD passwords often contain characters like `$`, `#` or `)` that PowerShell and bash otherwise interpret.
 
 ## Summary
 
@@ -139,7 +135,7 @@ Key takeaway: everything so far was done manually with `kubectl`/`az`/`argocd` C
 
 We approaching the main part of the workshop, please create new public github repositories
 
-```yaml
+```text
 infrastructure-repo
 application-repo
 ```
@@ -148,13 +144,13 @@ This concludes initial setup, please refer to readme in application folder for m
 
 Remainder, if you need to stop working with port forwarding - just kill all processes, we need this active for the next steps, so keep console alive :)
 
-```yaml
+```powershell
 taskkill /IM kubectl.exe /F
 ```
 
 Keep in mind that you can be connected to the wrong cluster/argo cd instance, if that would be the case double check active kubectl context, switch it to the correct one and logoff from ArgoCD
 
-```yaml
+```bash
 kubectl config current-context
 kubectl config get-contexts
 kubectl config use-context <correct-context-name>  

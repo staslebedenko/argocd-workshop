@@ -8,12 +8,14 @@
 
 First we need to delete existing apps in Argo CD
 
-```yaml
+```bash
 kubectl delete application app-of-apps -n argocd  
 kubectl delete application common-resources -n argocd  
 kubectl delete application frontend-test -n argocd  
 kubectl delete application backend-test -n argocd  
 ```
+
+Note: `app-of-apps` carries the `resources-finalizer.argocd.argoproj.io` finalizer, so deleting it cascades and removes the three child Applications with it - the last three commands will usually just report `NotFound`. That is expected; they are there as a safety net in case your root app was created without the finalizer.
 
 Create a new application set file at `argo-cd-apps/application-set.yaml` in the infrastructure repository. Change the three `repoURL` values to your own repositories. Note that the common-resources path intentionally stays `step-4/apps/common/base` - we reuse the manifests pushed there in the previous step, nothing new is pushed in this one.
 
@@ -68,15 +70,19 @@ spec:
 
 and then apply 
 
-```yaml
+```bash
 kubectl apply -f argo-cd-apps/application-set.yaml  
 ```
 
-A few things to note, your application set is not visible in UI, only result applications
+A few things to note:
 
-```yaml
+- The ApplicationSet itself is not visible in the UI - only the resulting Applications are. To inspect or remove it you go through kubectl or the CLI. The command below deletes the ApplicationSet **and cascades to all three generated Applications** - so don't run it now if you want to keep your deployment (it also requires an active `argocd login` session):
+
+```bash
 argocd appset delete dev-infra-appset
 ```
+
+- We deliberately carried the `syncWave` values over from step 4 - but notice they change **nothing** here. Sync waves order resources within one parent Application's sync; Applications stamped out by an ApplicationSet are independent and each auto-syncs on its own, in parallel. Our deployment still works only because the `devbcn-demo` namespace already exists from step 4. Ordering across applications is an App-of-Apps feature, and that is one honest reason to pick it over an ApplicationSet when deployment order matters (see the comparison below).
 
 ## Which pattern should you actually use?
 
@@ -190,6 +196,6 @@ That's the whole GitOps loop: cluster -> Argo CD -> Git as the single source of 
 
 - Try a `git` or `cluster` generator instead of the `list` generator we used, so new apps/environments show up automatically instead of being hand-listed.
 - Split this single dev environment into multiple environments/clusters (see the "Complexity raises fast" note from step 3's summary).
-- Explore Argo CD notifications and the audit log we enabled in step 4 for real alerting.
+- Explore Argo CD notifications and the structured JSON server logs we enabled in step 4 (the API server log is Argo CD's audit trail) for real alerting.
 
 Thanks for going through the whole workshop - now go build something and let Git argue with your cluster for you :)

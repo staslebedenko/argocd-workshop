@@ -13,11 +13,14 @@
 Kustomize is also a part of kubectl :)
 
 Alternatively use following winget commands
+
+```powershell
 winget install -e --id Kubernetes.kubectl
 winget install -e --id Git.Git
 winget install -e --id argoproj.argocd
 winget install -e --id Kubernetes.kustomize
 winget install --exact --id Microsoft.AzureCLI
+```
 
 ### Instructions
 Each step of workshop contains own readme with detailed flow plus complete code.
