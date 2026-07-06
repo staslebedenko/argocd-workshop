@@ -229,7 +229,7 @@ metadata:
 spec:  
   project: devbcn-demo  
   source:  
-    repoURL: https://github.com/staslebedenko/infrastructure-repo.git  
+    repoURL: https://github.com/staslebedenko/infrastructure-repo.git  # Change to your Repo URL  
     targetRevision: HEAD  
     path: step-3/apps/frontend/envs/dev  
   destination:  
@@ -247,7 +247,7 @@ Argo CD sync waves allow you to orchestrate the deployment order of Kubernetes r
 
 Now we will try to deploy our applications and fix some errors along the way.
 
-First - please commit all files above to git repo and push it to your public github repo.  
+First - please commit all files above to git repo and push it to your public github repo, into the `step-3/` folder (see the step-N convention from step 2). Make sure the `repoURL` in both Application manifests above points to **your** repository - the later exercises ask you to fix issues by pushing changes, which only works against your own repo.  
 
 Please do the switch context to your cluster, to avoid problems :)
 ```yaml
@@ -515,14 +515,15 @@ Lesson 2. Complexity raises fast, be aware that we are working now still with on
 - etc
 
 
-### (Optional)If you stuck with unhealthy Argo CRD app in deleting state
+### (Optional) If you are stuck with an Argo CD Application in deleting state
 
-```yaml
+Remove the finalizer from the stuck Application (note: Applications live in the `argocd` namespace), then delete it:
 
-kubectl patch app frontend -p '{"metadata": {"finalizers": null}}' --type merge
-kubectl patch crd frontend-test -p '{"metadata": {"finalizers": null}}' --type merge
+```bash
+kubectl patch app frontend-test -n argocd -p '{"metadata": {"finalizers": null}}' --type merge
+kubectl delete app frontend-test -n argocd
 
-kubectl delete app frontend
-kubectl delete crd frontend-test
+kubectl patch app common-resources -n argocd -p '{"metadata": {"finalizers": null}}' --type merge
+kubectl delete app common-resources -n argocd
 ```
 

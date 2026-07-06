@@ -210,10 +210,10 @@ kustomize build infra/frontend/envs/dev/
 
 You will get manifest output to the console after each commands
 
-If everything looks cool, please commit and push all manifests to remote.
-My repo url with source app code and manifests above is here.
+If everything looks cool, please commit and push all manifests to your public `application-repo` (this repo keeps its normal root layout - no step-N folders here, only the infrastructure repo uses them).
+My repo url with source app code and manifests above is here, for reference:
 
-```yaml
+```
 https://github.com/staslebedenko/application-repo
 ```
 
@@ -235,19 +235,22 @@ kind: Application
 metadata:  
   name: app-of-apps  
   namespace: argocd  
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
 spec:  
   project: devbcn-demo                 # or existing project name  
   source:  
-    repoURL: https://github.com/staslebedenko/infrastructure-repo.git  
+    repoURL: https://github.com/staslebedenko/infrastructure-repo.git  # Change to your Repo URL
     targetRevision: HEAD  
-    path: step-4/argo-cd-apps/apps        # child folder containing child manifests  
+    path: step-4/argo-cd-apps/apps        # parent folder containing child manifests  
   destination:  
     server: https://kubernetes.default.svc  
     namespace: argocd  
   syncPolicy:  
     automated:  
       prune: true  
-      selfHeal: true   
+      selfHeal: true  
+      allowEmpty: true
 ```
 
 ```yaml
@@ -264,7 +267,7 @@ spec:
   source:  
     repoURL: https://github.com/staslebedenko/infrastructure-repo.git  # Change to your Repo URL  
     targetRevision: HEAD  
-    path: apps/common/base                # path to app manifest  
+    path: step-4/apps/common/base         # path to app manifest  
   destination:  
     server: https://kubernetes.default.svc  
     namespace: default               # For namespaces use "default"
@@ -286,7 +289,7 @@ metadata:
 spec:  
   project: devbcn-demo  
   source:  
-    repoURL: https://github.com/staslebedenko/application-repo.git  
+    repoURL: https://github.com/staslebedenko/application-repo.git  # Change to your Repo URL
     targetRevision: HEAD  
     path: infra/frontend/envs/dev  
   destination:  
@@ -310,7 +313,7 @@ metadata:
 spec:  
   project: devbcn-demo  
   source:  
-    repoURL: https://github.com/staslebedenko/application-repo.git  
+    repoURL: https://github.com/staslebedenko/application-repo.git  # Change to your Repo URL
     targetRevision: HEAD  
     path: infra/backend/envs/dev  
   destination:  
@@ -327,6 +330,8 @@ So no validation with Kustomize, but syntax validation with kubectl is possible 
 ```yaml
 kubectl apply --dry-run=client --validate=true -f argo-cd-apps/app-of-apps.yaml
 ```
+
+Now commit and push these manifests to **your** infrastructure repository, into the `step-4/` folder (same step-N convention as before). The root app reads `step-4/argo-cd-apps/apps` from git, so Argo CD only sees the child applications after they are pushed. Double-check that `repoURL` in `app-of-apps.yaml` and in all three child manifests points to your repositories (infrastructure-repo for common, application-repo for frontend/backend).
 
 ## Deployment of App-of-Apps manifests
 
@@ -374,10 +379,12 @@ kind: Application
 metadata:  
   name: app-of-apps  
   namespace: argocd  
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
 spec:  
   project: common-resources                 # or existing project name  
   source:  
-    repoURL: https://github.com/staslebedenko/infrastructure-repo.git  
+    repoURL: https://github.com/staslebedenko/infrastructure-repo.git  # Change to your Repo URL
     targetRevision: HEAD  
     path: step-4/argo-cd-apps/apps        # parent folder containing child manifests  
   destination:  
@@ -386,7 +393,8 @@ spec:
   syncPolicy:  
     automated:  
       prune: true  
-      selfHeal: true   
+      selfHeal: true  
+      allowEmpty: true
 ```
 
 ## Observability - optional step
@@ -456,6 +464,7 @@ resources:
   - ../../base  
   - restrict-default-project.yaml
   - project-devbcn-demo.yaml
+  - project-common-resources.yaml
   
 namespace: argocd  
   

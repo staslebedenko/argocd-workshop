@@ -8,3 +8,5 @@ resources:
 patches:  
 - path: deployment-patch.yaml
 - path: backend-configmap-patch.yaml  
+- path: service-patch.yaml  
+ 

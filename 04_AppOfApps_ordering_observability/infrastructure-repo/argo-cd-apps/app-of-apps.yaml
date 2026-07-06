@@ -7,11 +7,11 @@ metadata:
   finalizers:
   - resources-finalizer.argocd.argoproj.io  
 spec:  
-  project: common-resources                 # warning :)  
-  source:  
-    repoURL: https://github.com/staslebedenko/infrastructure-repo.git  
-    targetRevision: HEAD  
-    path: step-4/argo-cd-apps/apps        # child folder containing child manifests  
+  project: devbcn-demo                 # warning :)
+  source:
+    repoURL: https://github.com/staslebedenko/infrastructure-repo.git  # Change to your Repo URL
+    targetRevision: HEAD
+    path: step-4/argo-cd-apps/apps        # parent folder containing child manifests
   destination:  
     server: https://kubernetes.default.svc  
     namespace: argocd  

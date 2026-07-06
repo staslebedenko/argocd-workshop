@@ -245,8 +245,10 @@ You should see empty UI and have access to the new project devbcn-demo
 ### Infrastructure repository
 Please add changes above to your public github repository, except for passwords :)
 
-My repository for infrastructure, you can use it too
-```yaml
+Important: this workshop keeps each module's state in a `step-N/` folder inside the repository — push this module's content into a `step-2/` folder of your `infrastructure-repo`. Later modules reference paths like `step-3/apps/...` and `step-4/argo-cd-apps/...` in Application manifests, so keeping this layout means the manifests work with your repository after you replace the repo URL with your own.
+
+My repository for infrastructure, structured the same way, for reference:
+```
 https://github.com/staslebedenko/infrastructure-repo.git
 ```
 

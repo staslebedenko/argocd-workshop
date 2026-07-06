@@ -20,11 +20,6 @@ spec:
           ports:  
             - containerPort: 5000  
           env:  
-            - name: REDIS_CONN_STR  
-              valueFrom:  
-                secretKeyRef:  
-                  name: backend-secret  
-                  key: REDIS_CONN_STR  
             - name: CORS_ALLOWED_ORIGIN  
               valueFrom:  
                 configMapKeyRef:  

@@ -15,7 +15,7 @@ kubectl delete application frontend-test -n argocd
 kubectl delete application backend-test -n argocd  
 ```
 
-Create a new application set file
+Create a new application set file at `argo-cd-apps/application-set.yaml` in the infrastructure repository. Change the three `repoURL` values to your own repositories. Note that the common-resources path intentionally stays `step-4/apps/common/base` - we reuse the manifests pushed there in the previous step, nothing new is pushed in this one.
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1  
@@ -28,19 +28,19 @@ spec:
   - list:  
       elements:  
       - name: common-resources  
-        repoURL: https://github.com/staslebedenko/infrastructure-repo.git  
+        repoURL: https://github.com/staslebedenko/infrastructure-repo.git  # Change to your Repo URL
         path: step-4/apps/common/base  
         namespace: default  
         project: common-resources  
         syncWave: "0"  
       - name: frontend-test  
-        repoURL: https://github.com/staslebedenko/application-repo.git  
+        repoURL: https://github.com/staslebedenko/application-repo.git  # Change to your Repo URL
         path: infra/frontend/envs/dev  
         namespace: devbcn-demo  
         project: devbcn-demo  
         syncWave: "1"  
       - name: backend-test  
-        repoURL: https://github.com/staslebedenko/application-repo.git  
+        repoURL: https://github.com/staslebedenko/application-repo.git  # Change to your Repo URL
         path: infra/backend/envs/dev  
         namespace: devbcn-demo  
         project: devbcn-demo  
@@ -69,7 +69,7 @@ spec:
 and then apply 
 
 ```yaml
-kubectl apply -f application-set.yaml  
+kubectl apply -f argo-cd-apps/application-set.yaml  
 ```
 
 A few things to note, your application set is not visible in UI, only result applications

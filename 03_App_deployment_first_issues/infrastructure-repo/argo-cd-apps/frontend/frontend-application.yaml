@@ -9,7 +9,7 @@ metadata:
 spec:  
   project: devbcn-demo  
   source:  
-    repoURL: https://github.com/staslebedenko/infrastructure-repo.git  
+    repoURL: https://github.com/staslebedenko/infrastructure-repo.git  # Change to your Repo URL
     targetRevision: HEAD  
     path: step-3/apps/frontend/envs/dev  
   destination:  

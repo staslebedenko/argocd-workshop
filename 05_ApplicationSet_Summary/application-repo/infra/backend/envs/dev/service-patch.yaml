@@ -1,0 +1,14 @@
+# root/apps/backend/envs/dev/service.yaml
+apiVersion: v1  
+kind: Service  
+metadata:  
+  name: backend  
+  namespace: devbcn-demo 
+  annotations:  
+    argocd.argoproj.io/sync-wave: "1"   
+spec:  
+  selector:  
+    app: backend  
+  ports:  
+    - port: 5000  
+      targetPort: 5000  
