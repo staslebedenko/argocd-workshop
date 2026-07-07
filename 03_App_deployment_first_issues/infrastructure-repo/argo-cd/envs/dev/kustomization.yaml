@@ -1,4 +1,7 @@
 # argo-cd/envs/dev/kustomization.yaml  
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
 resources:  
   - ../../base  
   - restrict-default-project.yaml
@@ -9,4 +12,4 @@ namespace: argocd
   
 patches:  
   - path: argocd-cm-patch.yaml  
-  - path: argocd-rbac-cm-patch.yaml 
+  - path: argocd-rbac-cm-patch.yaml  

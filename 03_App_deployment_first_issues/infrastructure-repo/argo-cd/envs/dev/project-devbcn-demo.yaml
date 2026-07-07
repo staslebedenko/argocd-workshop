@@ -9,7 +9,7 @@ spec:
   sourceRepos:  
     - "*" # Allow all repositories, or specify your Git repos explicitly  
   destinations:  
-    - namespace: devbcn-demo # Allow all namespaces, or restrict to specific namespaces if needed  'https://your.git.repo/applications.git'
+    - namespace: devbcn-demo # Restrict this project to the devbcn-demo namespace
       server: "*"    # Allow all clusters, or restrict to specific clusters  
   clusterResourceWhitelist:  
     - group: "*"  

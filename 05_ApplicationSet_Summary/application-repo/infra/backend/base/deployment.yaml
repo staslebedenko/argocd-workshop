@@ -1,4 +1,4 @@
-# root/apps/backend/base/deployment.yaml
+# infra/backend/base/deployment.yaml
 apiVersion: apps/v1  
 kind: Deployment  
 metadata:  

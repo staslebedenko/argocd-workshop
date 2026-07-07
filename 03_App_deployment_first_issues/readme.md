@@ -1,7 +1,7 @@
 # Step 3. Application deployment, templating, first issues
 
 - **Hands-on:** Create a reusable base manifest for your application (deployment/service).
-- **Hands-on:** Implement environment-specific envs for "test" and "prod":
+- **Hands-on:** Implement an environment-specific overlay for "dev" (replica count patch); "test"/"prod" overlays follow the same pattern and are left as homework:
     - Modify replica counts, resource limits, environment variables.
     - Inject environment-specific configuration (via ConfigMaps or Secret references).
 - Deploy via Argo CD and verify environment-specific deployment.
@@ -21,7 +21,7 @@ infrastructure-repo/
 │   │   │   └── kustomization.yaml  
 │   │   └── envs/  
 │   │       └── dev/  
-│   │           └── kustomization.yaml    # Dev environment empty overlay  
+│   │           └── kustomization.yaml    # Dev environment empty overlay (homework - not created in this step)  
 │   │  
 │   └── frontend/  
 │       ├── base/  
@@ -30,7 +30,7 @@ infrastructure-repo/
 │       │   └── kustomization.yaml  
 │       └── envs/  
 │           └── dev/  
-│               ├── replicas-patch.yaml   # Replica count change for dev  
+│               ├── deployment-patch.yaml # Replica count change for dev  
 │               └── kustomization.yaml  
 │  
 ├── argo-cd/                              # Argo CD installation and configuration manifests  
@@ -47,8 +47,7 @@ infrastructure-repo/
 │  
 └── argo-cd-apps/                        # Argo CD Application CRDs pointing to apps  
     ├── common/  
-    │   └── base/  
-    │       └── common-app.yaml          # manifest for common resources  
+    │   └── common-app.yaml              # manifest for common resources  
     └── frontend/  
         └── frontend-application.yaml    # manifest for frontend app  
 ```
@@ -289,7 +288,7 @@ As you can see, deployment of common-resources app failed, but Argo showing it a
 Let’s start with the common-resources app. If we will try to open it - we will get informative error
 ![image](https://github.com/user-attachments/assets/f6756e11-db40-4584-8e67-12da3e5f273d)
 
-And we cannot do anything from Argo CD UI, now is a good time to add new namespace to Argo CD
+And we cannot do anything from Argo CD UI, now is a good time to add a new Argo CD project for it
 ```yaml
 # argo-cd/envs/dev/project-common-resources.yaml
 apiVersion: argoproj.io/v1alpha1  
@@ -340,7 +339,7 @@ And apply Argo CD changes
 kustomize build argo-cd\envs\dev\ | kubectl apply -f -
 ```
 
-Let’s check status in UI :)And update kustomize to include this file
+Let’s check status in UI :)
 ![image](https://github.com/user-attachments/assets/f43987d2-3769-4537-b21c-ea9c91852c6b)
 
 ### Error 2
@@ -489,9 +488,9 @@ Whatever we will try to change in the sync, it will not help :)
 
 We will reverting changes of devbcn namespace and ensuring that frontend application is green
 
-Open ArgoCD UI, select Frontend, click DETAILS ⇒ SUMMARY ⇒ EDIT = SYNC POLICY and click on to the SELF HEAL - ENABLE. You will see button DISABLE after change.
+Open ArgoCD UI, select Frontend, click DETAILS ⇒ SUMMARY ⇒ EDIT = SYNC POLICY and check the SYNC POLICY: our manifest already sets `selfHeal: true`, so you should see the SELF HEAL - DISABLE button (meaning it is enabled). If yours shows ENABLE, click it.
 
-Then we will delete our Frontend service with kubectl command
+Then we will delete our Frontend deployment with kubectl command
 
 ```bash
 kubectl -n devbcn-demo delete deployment frontend

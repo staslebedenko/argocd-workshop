@@ -24,12 +24,9 @@ Argo CD configs and Applications staying in the same repo
 root/  
 ├── apps/                                 # Kubernetes application manifests  
 │   └── common/  
-│       ├── base/  
-│       │   ├── namespace-devbcn.yaml     # Namespace definition for devbcn-demo  
-│       │   └── kustomization.yaml  
-│       └── envs/  
-│          └── dev/  
-│              └── kustomization.yaml    # Dev environment empty overlay  
+│       └── base/  
+│           ├── namespace-devbcn.yaml     # Namespace definition for devbcn-demo  
+│           └── kustomization.yaml  
 │  
 ├── argo-cd/                              # Argo CD installation and configuration manifests  
 │   ├── base/  
@@ -39,16 +36,18 @@ root/
 │       └── dev/  
 │           ├── argocd-cm-patch.yaml          # User creation devbcn-user  
 │           ├── argocd-rbac-cm-patch.yaml     # RBAC for new project+user  
+│           ├── argocd-cmd-params-patch.yaml  # JSON logging (created in the observability section below)  
 │           ├── kustomization.yaml  
 │           ├── project-devbcn-demo.yaml      # Definition of Argo CD project for devbcn-demo  
+│           ├── project-common-resources.yaml # Project for shared resources (created in step 3)  
 │           └── restrict-default-project.yaml # Restrict default project access  
 │  
 └── argo-cd-apps/                     # Argo CD Application CRDs pointing to apps  
-			├── app-of-apps.yaml            # single Application pointing to apps folder  
-			└── apps/  
-			    ├── backend-app.yaml          
-			    └── frontend-app.yaml         
-
+    ├── app-of-apps.yaml              # single Application pointing to apps folder  
+    └── apps/  
+        ├── backend-application.yaml          
+        ├── frontend-application.yaml         
+        └── common-app.yaml  
 ```
 
 Application manifests moving to the source code repository
@@ -62,11 +61,14 @@ root/
 │   │   ├── base/
 │   │   │   ├── deployment.yaml  
 │   │   │   ├── service.yaml       
+│   │   │   ├── backend-configmap.yaml  
 │   │   │   └── kustomization.yaml  
 │   │   └── envs/  
 │   │       └── dev/
-│   │           ├── replicas-patch.yaml   # Replica count change for dev  
-│   │           └── kustomization.yaml    # Dev environment overlay can have new namespace  
+│   │           ├── deployment-patch.yaml        # Replica count change for dev  
+│   │           ├── backend-configmap-patch.yaml # Config override for dev  
+│   │           ├── service-patch.yaml           # Service tweak for dev  
+│   │           └── kustomization.yaml  
 │   │  
 │   └── frontend/  
 │       ├── base/  
@@ -75,7 +77,7 @@ root/
 │       │   └── kustomization.yaml  
 │       └── envs/  
 │           └── dev/  
-│               ├── replicas-patch.yaml   # Replica count change for dev  
+│               ├── deployment-patch.yaml   # Replica count change for dev  
 │               └── kustomization.yaml  
 ```
 
@@ -164,7 +166,7 @@ resources:
   - backend-configmap.yaml   
 ```
 
-And dev environment overlays for it at envs/dev. Note the `argocd.argoproj.io/sync-wave` annotations: these are **resource-level** waves - when Argo CD syncs the backend application, it applies the ConfigMap (wave 0) first, then the Service (wave 1), then the Deployment (wave 2), so the Deployment never starts before the config it mounts exists. This is the same wave mechanism we will use to order whole applications later in this step - waves order resources within one Application's sync.
+And dev environment overlays for it at envs/dev. The ConfigMap patch carries the same CORS value as the base - for our single dev environment the patch exists to demonstrate the per-environment override mechanism (and to carry the wave annotation below); with a real test/prod split each env would set its own URL here. Note the `argocd.argoproj.io/sync-wave` annotations: these are **resource-level** waves - when Argo CD syncs the backend application, it applies the ConfigMap (wave 0) first, then the Service (wave 1), then the Deployment (wave 2), so the Deployment never starts before the config it mounts exists. This is the same wave mechanism we will use to order whole applications later in this step - waves order resources within one Application's sync.
 
 ```yaml
 # infra/backend/envs/dev/backend-configmap-patch.yaml
@@ -425,7 +427,7 @@ Observability is often a platform specific question, Azure, AWS, Splunk, DataDog
 
 so we touch location command line wise and I will leave azure integration instruction 
 
-We have 3 options here
+We have two options here
 
 - Kubectl
 - Proper one :)

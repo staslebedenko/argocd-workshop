@@ -1,4 +1,4 @@
-# root/apps/backend/base/backend-configmap.yaml
+# infra/backend/base/backend-configmap.yaml
 apiVersion: v1  
 kind: ConfigMap  
 metadata:  

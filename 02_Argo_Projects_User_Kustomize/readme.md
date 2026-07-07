@@ -43,7 +43,7 @@ argo-cd/
 
 ### Setting up Argo base manifest
 
-**install.yaml** - adding it from public agro url to base folder argo-cd/base
+**install.yaml** - adding it from public argo url to base folder argo-cd/base
 ```text
 https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
@@ -176,7 +176,7 @@ kustomize build argo-cd\envs\dev\ | kubectl apply -f -
 ```
 ![image](https://github.com/user-attachments/assets/b12abc1e-eab8-4a96-8c55-b09df288dd11)
 
-* This patches `argocd-cm` and `argocd-rbac-cm`, which restarts the `argocd-server` pod - your `kubectl port-forward` from step 1 will drop (`error: lost connection to pod`). Just restart it and, if prompted, re-login with the `argocd` CLI (see the note at the end of step 1).
+* This patches `argocd-cm` and `argocd-rbac-cm` - Argo CD watches these ConfigMaps and reloads them live, no pod restart needed. Your `kubectl port-forward` from step 1 may still occasionally drop (`error: lost connection to pod`) - just restart it and, if prompted, re-login with the `argocd` CLI (see the note at the end of step 1).
 
 To verify new project creation
 ```bash
@@ -198,7 +198,7 @@ First we need to check if we are logged in with Argo cli
 argocd account get-user-info
 ```
 
-Set user a new password for devbcn-demo user below, don’t forget to add your admin password below.
+Set user a new password for the devbcn-user account below, don’t forget to add your admin password below.
 
 ```bash
 argocd account update-password --server localhost:8080 --insecure --account devbcn-user --new-password password1234 --current-password "<your-admin-password>"

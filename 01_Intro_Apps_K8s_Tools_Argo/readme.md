@@ -98,7 +98,7 @@ argocd app list
 
 Step above might not work if your port forwarding is not active, if this is the case please restart it.
 
-* Note: any time you apply a change to Argo CD's own config (`argocd-cm`, `argocd-rbac-cm`, `argocd-cmd-params-cm`, etc. - this happens a lot from step 2 onwards), the `argocd-server` pod restarts to pick it up. Any running `kubectl port-forward` will die with `error: lost connection to pod` - just re-run the port-forward command. The `argocd` CLI may also show a one-time `server certificate had error ... Proceed insecurely (y/n)?` prompt afterwards (the pod's self-signed cert changed) - answer `y` and it won't ask again until the pod restarts again.
+* Note: Argo CD reloads its `argocd-cm`/`argocd-rbac-cm` ConfigMaps live (no pod restart), while `argocd-cmd-params-cm` changes need an explicit `kubectl rollout restart deployment argocd-server -n argocd` (relevant in step 4). If the pod does restart - or your `kubectl port-forward` drops with `error: lost connection to pod` for any reason - just re-run the port-forward command. The `argocd` CLI may also show a one-time `server certificate had error ... Proceed insecurely (y/n)?` prompt after a pod restart (the self-signed cert changed) - answer `y` and it won't ask again until the next restart.
 
 
 Alternative PowerShell terminal command for port-forwarding
