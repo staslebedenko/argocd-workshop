@@ -392,9 +392,12 @@ kubectl apply -f argo-cd-apps/app-of-apps.yaml
 ```
 
 !!!Important thing!!! App of Apps manifest should target argocd namespace and argo project should allow this :), otherwise you can get error like below.
+
 ![image](https://github.com/user-attachments/assets/5fd474de-a6f9-4cae-81d4-0c5c8c8ca8d4)
 
 The root app of apps file should always target destination namespace argocd, but if for example, our project devbcn-demo will explicitly forbid any other namespaces, then we should explicitly set this App of Apps manifest to  common-resources project.
+
+So, lets fix project name to common-resource below
 
 ```yaml
 # argo-cd-apps/app-of-apps.yaml
@@ -419,6 +422,12 @@ spec:
       prune: true  
       selfHeal: true  
       allowEmpty: true
+```
+
+And apply manifest again to start deployment of our fancy apps
+
+```bash
+kubectl apply -f argo-cd-apps/app-of-apps.yaml
 ```
 
 ## Observability - optional step
