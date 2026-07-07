@@ -65,10 +65,10 @@ The AKS managed-Prometheus addon itself is harmless to leave enabled.
 
 ## 7. Verify clean, then reset local state
 
-```bash
-kubectl get ns                                  # no argocd, no devbcn-demo
-kubectl get crd | grep argoproj                 # nothing
-kubectl get clusterrole | grep argocd           # nothing
+```powershell
+kubectl get ns  
+kubectl get crd | Select-String argoproj        # nothing
+kubectl get clusterrole | Select-String argocd  # nothing
 argocd logout localhost:8080
 ```
 
