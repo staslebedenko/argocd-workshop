@@ -6,7 +6,15 @@
 
 ## Application Set
 
-First we need to delete existing apps in Argo CD
+First we need to switch root in the command line from the previous step to the step 5 infrastructure repo (all paths and apply commands below assume this folder):
+
+```bash
+cd ..
+cd ..
+cd 05_ApplicationSet_Summary/infrastructure-repo
+```
+
+Then we need to delete existing apps in Argo CD
 
 ```bash
 kubectl delete application app-of-apps -n argocd  
@@ -194,6 +202,7 @@ Looking back at the full journey:
 
 That's the whole GitOps loop: cluster -> Argo CD -> Git as the single source of truth -> automated, self-healing sync. From here, good next steps (homework) are:
 
+- Do the hierarchical homework below (ApplicationSet -> App-of-Apps) - it ties together everything from steps 4 and 5.
 - Try a `git` or `cluster` generator instead of the `list` generator we used, so new apps/environments show up automatically instead of being hand-listed.
 - Split this single dev environment into multiple environments/clusters (see the "Complexity raises fast" note from step 3's summary).
 - Explore Argo CD notifications and the structured JSON server logs we enabled in step 4 (the API server log is Argo CD's audit trail) for real alerting.
@@ -201,3 +210,82 @@ That's the whole GitOps loop: cluster -> Argo CD -> Git as the single source of 
 Want to replay the workshop on the same cluster? See [teardown.md](teardown.md) for how to safely remove Argo CD and all workshop deployments without re-provisioning AKS (deletion order matters because of Application finalizers).
 
 Thanks for going through the whole workshop - now go build something and let Git argue with your cluster for you :)
+
+
+## Homework: hierarchical setup - ApplicationSet on top, your step 4 App-of-Apps below
+
+The two patterns compose. An `Application` CR is just a Kubernetes resource, so an ApplicationSet can generate *root* Applications - each one an App-of-Apps managing its own subtree. The generator decides **who gets a tree** (env, cluster, team); the App-of-Apps below decides **what is inside each tree, in what order** (sync waves work within a root's sync - something the flat ApplicationSet from this step cannot give you).
+
+Let's put your existing step 4 App-of-Apps under an ApplicationSet.
+
+### 1. Remove the flat ApplicationSet from this step
+
+`dev-infra-appset` generates Applications named `common-resources`, `frontend-test` and `backend-test` - the same names your App-of-Apps children use. Two owners for the same Application means a prune/recreate fight, so the flat ApplicationSet has to go first (this cascades and removes its three generated apps):
+
+```bash
+kubectl delete applicationset dev-infra-appset -n argocd
+```
+
+### 2. Create the hierarchical ApplicationSet
+
+New file in the infrastructure repository:
+
+```yaml
+# argo-cd-apps/root-appset.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: root-appset
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: dev
+        path: step-4/argo-cd-apps/apps
+  template:
+    metadata:
+      name: 'app-of-apps-{{env}}'
+      namespace: argocd
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io   # so deleting a root cascades to its children
+    spec:
+      project: common-resources                  # must allow the argocd namespace destination
+      source:
+        repoURL: https://github.com/staslebedenko/infrastructure-repo.git  # Change to your Repo URL
+        targetRevision: HEAD
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: argocd                        # its resources are Application CRs
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+```
+
+The template is your step 4 `app-of-apps.yaml`, parameterized. Apply it:
+
+```bash
+kubectl apply -f argo-cd-apps/root-appset.yaml
+```
+
+### 3. Verify the hierarchy
+
+```bash
+kubectl get applications -n argocd
+```
+
+You should see `app-of-apps-dev` plus the three children it created (`common-resources`, `frontend-test`, `backend-test`) - a three-level chain: ApplicationSet (invisible in the UI) -> root app -> child apps -> workloads. The children roll out in wave order 0/1/2 because they are synced *by the root*, unlike in step 5's flat setup.
+
+### 4. Think through scaling it (no need to execute)
+
+Adding a second element (say `env: test` pointing at a `step-N/argo-cd-apps/apps-test` folder) would stamp out a second, complete tree. One rule keeps this safe: **the hierarchy must stay a tree, not a diamond** - each child Application folder (and each Application *name*) may be referenced by exactly one root. The child manifests in a second folder would need their own names (`frontend-test-test2` won't win prizes, `{{env}}`-suffixed names via a Helm-templated App-of-Apps would - see the middle-ground section above).
+
+### 5. Cleanup - mind the triple cascade
+
+Deleting `root-appset` now cascades **three levels**: the ApplicationSet deletes `app-of-apps-dev`, its finalizer cascades to the three children, and their finalizers prune the workloads. One command, empty namespace. That reach is exactly why production setups put `preserveResourcesOnDeletion: true` in the ApplicationSet's `syncPolicy` (or leave finalizers off the roots) as a circuit breaker:
+
+```bash
+kubectl delete applicationset root-appset -n argocd   # removes everything this homework created
+```

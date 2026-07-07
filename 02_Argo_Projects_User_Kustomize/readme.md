@@ -1,5 +1,14 @@
 # Step 2. Project, User and Kustomize overlays
 
+Reference repositories for the whole workshop - the instructor's public repos, structured the way yours will end up (infrastructure content lives in `step-N/` folders, one per workshop step; the application repo keeps a normal root layout):
+
+```text
+https://github.com/staslebedenko/infrastructure-repo.git   (used from this step on)
+https://github.com/staslebedenko/application-repo.git      (used from step 4 on)
+```
+
+You created your own empty `infrastructure-repo` and `application-repo` at the end of step 1 - in this step we start filling the first one. Use the repos above to compare or peek ahead when stuck.
+
 1. Checking kubectl, kustomize, argo cli, az cli
 2. Creating structure for infra repository
 3. Connecting to our dev cluster
