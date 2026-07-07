@@ -215,6 +215,12 @@ argocd account update-password --server localhost:8080 --insecure --account devb
 ```
 Login with your new user to Argo CD by entering new login: devbcn-user and password
 
+```bash
+argocd logout localhost:8080 --insecure 
+argocd login localhost:8080 --username devbcn-user --password "password1234" --insecure
+argocd app list  
+argocd logout localhost:8080 --insecure
+```
 You should see empty UI and have access to the new project devbcn-demo
 
 ### If you getting unauthorized error

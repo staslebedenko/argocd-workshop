@@ -82,6 +82,37 @@ and then apply
 kubectl apply -f argo-cd-apps/application-set.yaml  
 ```
 
+(Alternative: the CLI can create it too - `argocd appset create argo-cd-apps/application-set.yaml`.)
+
+Since the ApplicationSet does not show up in the UI, the `argocd` CLI is your main window into it (requires the `argocd login` session from the earlier steps):
+
+```bash
+argocd appset list
+argocd appset get dev-infra-appset
+argocd app list
+```
+
+Optional: quick CLI cheat sheet for status + management:
+
+```bash
+# status
+argocd appset list
+argocd appset get dev-infra-appset
+
+# manage
+argocd appset create -f argo-cd-apps/application-set.yaml
+argocd appset delete dev-infra-appset
+```
+
+`argocd appset get` is the first stop when a generator misbehaves: its output includes the **Conditions** (did parameter generation succeed, is there a template error) and the list of Applications it produced. Remember the community-feedback section below - a broken generator fails *silently* by producing no apps or the wrong apps, and this command is how you find out which.
+
+The same information is available without an argocd login through plain kubectl - the conditions live in the resource status:
+
+```bash
+kubectl get applicationset -n argocd
+kubectl describe applicationset dev-infra-appset -n argocd
+```
+
 A few things to note:
 
 - The ApplicationSet itself is not visible in the UI - only the resulting Applications are. To inspect or remove it you go through kubectl or the CLI. The command below deletes the ApplicationSet **and cascades to all three generated Applications** - so don't run it now if you want to keep your deployment (it also requires an active `argocd login` session):
@@ -273,6 +304,7 @@ kubectl apply -f argo-cd-apps/root-appset.yaml
 ### 3. Verify the hierarchy
 
 ```bash
+argocd appset get root-appset
 kubectl get applications -n argocd
 ```
 
