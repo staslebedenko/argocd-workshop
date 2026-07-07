@@ -82,6 +82,8 @@ After that the workshop replays cleanly from step 1's Argo CD install. A fresh `
 
 Note: on re-install the Argo CD CRDs must be created from scratch, so `kubectl apply` **must** run with `--server-side` (as the step readmes show). Without it, the ~1MB ApplicationSet CRD overflows the 256KiB `last-applied-configuration` annotation and fails with `metadata.annotations: Too long`. If you mixed in a client-side apply first, run the next server-side apply once with `--force-conflicts`.
 
+Expect one more conflict when you replay step 2: the fresh Argo CD instance auto-creates the `default` AppProject, so the first overlay apply reports `conflicts with "argocd-server"` on its spec fields. That is normal - the step 2 command includes `--force-conflicts` to take ownership of the project for git.
+
 ## If a namespace gets stuck in Terminating
 
 The usual cause is an Application whose finalizer was never processed because the controller died first. Strip the finalizers from all remaining Applications:

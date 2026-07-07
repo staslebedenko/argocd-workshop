@@ -172,10 +172,11 @@ kustomize build argo-cd\envs\dev\ > result.yaml
 
 If result manifest successfully outputted to console, we can apply all changes to our Kubernetes cluster
 ```powershell
-kustomize build argo-cd\envs\dev\ | kubectl apply --server-side -f -  
+kustomize build argo-cd\envs\dev\ | kubectl apply --server-side --force-conflicts -f -  
 ```
 ![image](https://github.com/user-attachments/assets/b12abc1e-eab8-4a96-8c55-b09df288dd11)
 
+* Why `--force-conflicts`? Argo CD auto-created the `default` AppProject at startup, so its server owns the `spec` fields our `restrict-default-project.yaml` is about to overwrite - server-side apply reports this as a conflict (`conflicts with "argocd-server" ...`). Forcing it hands ownership of those fields to kubectl, which is exactly the point of this exercise: from now on git, not the Argo CD server, is the source of truth for that project. Once ownership is transferred, later applies in steps 3-4 work without the flag.
 * This patches `argocd-cm` and `argocd-rbac-cm` - Argo CD watches these ConfigMaps and reloads them live, no pod restart needed. Your `kubectl port-forward` from step 1 may still occasionally drop (`error: lost connection to pod`) - just restart it and, if prompted, re-login with the `argocd` CLI (see the note at the end of step 1).
 
 To verify new project creation
@@ -183,7 +184,7 @@ To verify new project creation
 kubectl get appproject -n argocd devbcn-demo
 ```
 
-(Optional) You can also deploy folders with kustomize overlays with kubectl, because kustomize is also part of kubectl
+(Optional) You can also deploy folders with kustomize overlays with kubectl, because kustomize is also part of kubectl (add `--force-conflicts` here too if you skipped the pipe command above)
 ```powershell
 kubectl apply --server-side -k argo-cd\envs\dev\ 
 ```
