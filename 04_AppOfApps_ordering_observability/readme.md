@@ -444,6 +444,70 @@ With backend + frontend + common resources all flowing through Git now, step 5 s
 
 
 
+## Exercise: breaking sync waves - make frontend wait for backend
+
+Right now the child apps deploy in the order common (`0`) -> frontend (`1`) -> backend (`2`). Goal of this exercise: reverse the dependency so the **frontend is not deployed until the backend is actually ready** - and see with your own eyes what waves do and do not guarantee.
+
+### 1. Swap the wave numbers
+
+In your infrastructure repo, edit the two child manifests and push:
+
+- `step-4/argo-cd-apps/apps/backend-application.yaml`: `argocd.argoproj.io/sync-wave: "2"` -> `"1"`
+- `step-4/argo-cd-apps/apps/frontend-application.yaml`: `argocd.argoproj.io/sync-wave: "1"` -> `"2"`
+
+(common stays at `"0"`). The root app now creates the backend Application before the frontend one. But if you test only this, you will notice both apps still sync almost simultaneously - creation order is enforced, readiness is not. That is the trap.
+
+### 2. Teach Argo CD to wait for child app health
+
+Since Argo CD 1.8 the built-in health assessment for `Application` resources is removed, so the root app considers a child Application "done" the moment the object is created. To make waves gate on the child app actually becoming **Healthy**, add a custom health check to `argo-cd/envs/dev/argocd-cm-patch.yaml` under `data:`:
+
+```yaml
+  resource.customizations.health.argoproj.io_Application: |
+    hs = {}
+    hs.status = "Progressing"
+    hs.message = ""
+    if obj.status ~= nil and obj.status.health ~= nil then
+      hs.status = obj.status.health.status
+      hs.message = obj.status.health.message or ""
+    end
+    return hs
+```
+
+Apply the overlay:
+
+```powershell
+kustomize build argo-cd\envs\dev\ | kubectl apply --server-side -f -
+```
+
+### 3. Break the backend to prove the gate works
+
+In your **application repo**, put a nonexistent image tag into `infra/backend/base/deployment.yaml`:
+
+```yaml
+          image: docker.io/stasiko/funneverends-backend:doesnotexist
+```
+
+commit and push. Then delete the root app and its children (so you can watch the ordered rollout from a clean slate) and re-apply it:
+
+```bash
+kubectl delete application app-of-apps -n argocd
+kubectl apply -f argo-cd-apps/app-of-apps.yaml
+```
+
+Watch what happens: common syncs (wave 0), `backend-test` is created (wave 1) and its pods go into `ImagePullBackOff` - so the app stays **Progressing/Degraded**, the root app parks in wave 1, and `frontend-test` is **never created**. That is the gate working.
+
+### 4. Fix it and watch the chain complete
+
+Restore the image tag to `:latest` in the application repo, commit, push. Backend syncs, becomes Healthy, and only then does the root app proceed to wave 2 and create `frontend-test`.
+
+### Takeaways
+
+- Wave numbers alone order **creation**, not **readiness** - the Application health check customization is what makes cross-app waves actually wait.
+- Any mistake in an early wave now blocks everything behind it - ordering is a dependency you own. Combined with lesson 2 above (a wave that renders nothing may be skipped), treat cross-app waves as a sharp tool for real dependencies, not a default.
+- When two components genuinely depend on each other, the more idiomatic solution is **resource-level waves inside one Application** (like our ConfigMap -> Service -> Deployment chain in the backend overlay) - health gating works there natively, with no `argocd-cm` customization.
+
+When you are done experimenting, revert the wave swap (and keep or drop the health check as you prefer) so your repo matches the rest of the workshop flow.
+
 ## Observability - optional homework step
 
 Observability is often a platform specific question, Azure, AWS, Splunk, DataDog, Dynatrace,
