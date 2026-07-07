@@ -430,7 +430,21 @@ And apply manifest again to start deployment of our fancy apps
 kubectl apply -f argo-cd-apps/app-of-apps.yaml
 ```
 
-## Observability - optional step
+## Summary
+
+Lesson 1. App-of-Apps turns "apply N Application manifests by hand" into "apply one root Application, let it manage the rest" - the root app just points at a folder of child Application manifests.
+
+Lesson 2. Sync-wave ordering (`argocd.argoproj.io/sync-wave`) is cooperative, not a guarantee - if an earlier wave fails to render at all (bad path, bad repo), Argo CD may still consider it "done" and move on. Don't rely on waves alone for critical ordering; verify actual resource health too.
+
+Lesson 3. The root App-of-Apps manifest's own `project` and `destination.namespace` matter - it needs a project that allows deploying into the `argocd` namespace itself, or you'll get a confusing rejection.
+
+With backend + frontend + common resources all flowing through Git now, step 5 shows how to stop hand-writing near-identical Application manifests for each one.
+
+## End
+
+
+
+## Observability - optional homework step
 
 Observability is often a platform specific question, Azure, AWS, Splunk, DataDog, Dynatrace,
 
@@ -647,17 +661,4 @@ With command below - note that `--name` is the name of your **Grafana workspace*
 ```bash
 az grafana dashboard import --name <your-grafana-workspace-name> --resource-group devbcn-demo --definition 14584
 ```
-
-## Summary
-
-Lesson 1. App-of-Apps turns "apply N Application manifests by hand" into "apply one root Application, let it manage the rest" - the root app just points at a folder of child Application manifests.
-
-Lesson 2. Sync-wave ordering (`argocd.argoproj.io/sync-wave`) is cooperative, not a guarantee - if an earlier wave fails to render at all (bad path, bad repo), Argo CD may still consider it "done" and move on. Don't rely on waves alone for critical ordering; verify actual resource health too.
-
-Lesson 3. The root App-of-Apps manifest's own `project` and `destination.namespace` matter - it needs a project that allows deploying into the `argocd` namespace itself, or you'll get a confusing rejection.
-
-With backend + frontend + common resources all flowing through Git now, step 5 shows how to stop hand-writing near-identical Application manifests for each one.
-
-## End
-
 
