@@ -499,7 +499,7 @@ kustomize build argo-cd\envs\dev\
 If all is ok, then go with 
 
 ```powershell
-kustomize build argo-cd\envs\dev\ | kubectl apply -f -  
+kustomize build argo-cd\envs\dev\ | kubectl apply --server-side -f -  
 ```
 
 Verify the setting landed in the ConfigMap:

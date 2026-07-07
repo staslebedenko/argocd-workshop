@@ -336,7 +336,7 @@ kustomize build argo-cd\envs\dev\
 And apply Argo CD changes
 
 ```powershell
-kustomize build argo-cd\envs\dev\ | kubectl apply -f -
+kustomize build argo-cd\envs\dev\ | kubectl apply --server-side -f -
 ```
 
 Let’s check status in UI :)

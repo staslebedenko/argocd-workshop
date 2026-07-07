@@ -198,4 +198,6 @@ That's the whole GitOps loop: cluster -> Argo CD -> Git as the single source of 
 - Split this single dev environment into multiple environments/clusters (see the "Complexity raises fast" note from step 3's summary).
 - Explore Argo CD notifications and the structured JSON server logs we enabled in step 4 (the API server log is Argo CD's audit trail) for real alerting.
 
+Want to replay the workshop on the same cluster? See [teardown.md](teardown.md) for how to safely remove Argo CD and all workshop deployments without re-provisioning AKS (deletion order matters because of Application finalizers).
+
 Thanks for going through the whole workshop - now go build something and let Git argue with your cluster for you :)

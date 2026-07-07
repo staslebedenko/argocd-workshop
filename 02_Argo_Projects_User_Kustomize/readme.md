@@ -172,7 +172,7 @@ kustomize build argo-cd\envs\dev\ > result.yaml
 
 If result manifest successfully outputted to console, we can apply all changes to our Kubernetes cluster
 ```powershell
-kustomize build argo-cd\envs\dev\ | kubectl apply -f -  
+kustomize build argo-cd\envs\dev\ | kubectl apply --server-side -f -  
 ```
 ![image](https://github.com/user-attachments/assets/b12abc1e-eab8-4a96-8c55-b09df288dd11)
 
@@ -185,7 +185,7 @@ kubectl get appproject -n argocd devbcn-demo
 
 (Optional) You can also deploy folders with kustomize overlays with kubectl, because kustomize is also part of kubectl
 ```powershell
-kubectl apply -k argo-cd\envs\dev\ 
+kubectl apply --server-side -k argo-cd\envs\dev\ 
 ```
 
 ### New user setup

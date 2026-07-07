@@ -55,10 +55,11 @@ kubectl get all
 The next step would be setup default instance of Argo CD from public manifest 
 ```bash
 kubectl create namespace argocd
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl apply --server-side -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 kubectl get all -n argocd
 ```
+* `--server-side` is required: the ApplicationSet CRD in the install manifest is ~1MB, which overflows the 256KiB annotation that regular (client-side) `kubectl apply` writes - without the flag you get `The CustomResourceDefinition "applicationsets.argoproj.io" is invalid: metadata.annotations: Too long`. We use `--server-side` for all Argo CD config applies throughout the workshop.
 
 Next we need to output admin password for the instance we just deployed 
 
