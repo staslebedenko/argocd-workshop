@@ -368,6 +368,11 @@ kubectl config current-context
 Now lets connect to our argo instance and delete all existing application there, just click on delete button of each application. Screenshot showing only one :)
 ![image](https://github.com/user-attachments/assets/32e40f5c-721a-45a4-9a18-715fa8a015a7)
 
+You can of course delete app from console
+```bash
+kubectl delete application frontend-test -n argocd
+```
+
 Then we will double check what namespaces we have now
 
 ```bash
