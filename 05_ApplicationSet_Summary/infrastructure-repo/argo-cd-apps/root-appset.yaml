@@ -1,0 +1,33 @@
+# argo-cd-apps/root-appset.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: root-appset
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: dev
+        path: step-4/argo-cd-apps/apps
+      - env: test
+        path: step-4/argo-cd-apps/apps  
+  template:
+    metadata:
+      name: 'app-of-apps-{{env}}'
+      namespace: argocd
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io   # so deleting a root cascades to its children
+    spec:
+      project: common-resources                  # must allow the argocd namespace destination
+      source:
+        repoURL: https://github.com/staslebedenko/infrastructure-repo.git  # Change to your Repo URL
+        targetRevision: HEAD
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: argocd                        # its resources are Application CRs
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
